@@ -1,1 +1,97 @@
+* Overview
 
+Transformation between 'flat' DAG of commits, i.e., linear, and
+hierarchical.  Might be cleanest to have (empty) commit at each 'start
+of section'.  Then could-be-ff commit at 'end of section'.
+
+Will need test repo; or at least test branch within this main repo.
+
+How to signal section start/end within flat commits?  Maybe add 'notes'
+to a commit.  Maybe adopt convention for content of commit message.
+E.g., <s> at start of 'subject' line of message of a 'start of section'
+commit; </s> in 'end of section' commit.  Allows extension to giving a
+name to a commit, via '<s id="add documentation">' or more abbreviated
+'<s Add documentation>'.  Could include some redundancy to ensure
+matching end/start but probably not necessary.
+
+How to describe entire linear/flat history for tests?  As patch series?
+Use 'git format-patch' to get bunch of files, which can then be in the
+main git repo as test data.   Bit perverse but might be OK.
+
+Annoyance (of unknown magnitude) caused by 'git am' handling of empty
+commits.  Can create them fine via the (undocumented?) '--always' flag
+to 'git format-patch', but web suggests (and brief experiments confirm)
+that 'git am' will baulk at them.  Might have to do them semi-manually.
+Come back to that.
+
+Expts with pygit2 --- seems straightforward enough so far.
+
+
+* Linear to dendrified
+
+Seems that just using repo.walk() will do what we want --- list of
+commits reachable from that point.
+
+- Check it's linear --- i.e., all commits except one have exactly one
+  parent; the one exception should have no parents (it's the root).
+
+- Assuming it is linear, put into list by following parent-ids, then
+  reverse that list.  Now have commits in order from root to tip.
+
+- Create new empty tree and 'base' commit pointing to it.  Seems might
+  be least clunky to have a global such 'base'.
+
+- Create new branch pointing at the base commit.  Generate unique name
+  for this branch?  Force existing branch?
+
+- Maintain idea of 'current tip', starting with that base commit.  For
+  each commit from root to tip: If <s> or normal, create new commit with
+  a single parent (the tip), updating the dendrified branch.  The
+  message, committer, author, tree taken as-is from linear commit.
+
+- If <s>, bit more to it: Might need equivalent of 'allow empty'.  Push
+  ID of just-created commit onto stack of 'section starts'.
+
+- If </s> create (empty) commit with two parents: tip, and result of
+  popping from section-start stack.
+
+- For both <s> and </s>, strip it from start of commit message.
+
+- Where do we check that we don't try to pop from an empty stack?  A
+  preparatory check would allow friendlier error messages.
+
+
+* Dendrified to linear
+
+Again, walk from tip of dendrified branch.  How to verify structure?
+Each commit should have either one parent or two.
+
+From tip, what when we hit first two-parented commit?
+
+It will become a </s> commit in the linear history.
+
+It should have an empty diff to exactly one of its parents.  That parent
+is the non-section-start commit.
+
+The other (the parent to which this commit has a non-empty diff) is the
+matching <s>.
+
+If we can iterate through from tip to root in topological order, should
+also be able to tell by: peek ahead in iterator; that one is the
+non-section-start commit.
+
+Either way, when we have noted the matching <s>, push that onto a
+stack.  Each time we have a single-parent commit, check whether it's the
+top of the <s>-stack.  Could we do this just for commits with empty
+diffs?  Seems like that ought to be valid.
+
+Then we should have the commits in a linear sequence, and having noted
+whether each one is a <s> or </s> or neither.  From there,
+straightforward to create a chain of commits from the 'base'.
+
+
+* Special role of empty-diff'd commits
+
+Is this going to cause trouble?  Normal git tools are wary of such
+commits.  Would be annoying to have to artificially cause a diff, so
+hope nothing too bad happens.
