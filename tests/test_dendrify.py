@@ -27,3 +27,8 @@ def test_empty_repo(empty_repo):
 class TestTransformations:
     def test_ensure_base(self, empty_dendrifier):
         assert empty_dendrifier.base_branch is not None
+
+    def test_base_recreation_caught(self, empty_dendrifier):
+        pytest.raises_regexp(ValueError, 'branch .* already exists',
+                             empty_dendrifier._create_base,
+                             empty_dendrifier.base_branch_name)
