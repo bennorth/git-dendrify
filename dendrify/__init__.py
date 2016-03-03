@@ -8,6 +8,7 @@ class Dendrifier:
     def __init__(self, repository_path, base_branch_name=default_base_branch_name):
         self.repo = git.Repository(repository_path)
         self.base_branch_name = base_branch_name
+        self._ensure_has_base()
 
     def _has_branch(self, branch_name):
         m_existing_branch = self.repo.lookup_branch(branch_name)
@@ -38,6 +39,10 @@ class Dendrifier:
         base_branch = self.repo.create_branch(branch_name, base_commit)
 
         return base_branch
+
+    def _ensure_has_base(self):
+        if not self._has_branch(self.base_branch_name):
+            self._create_base(self.base_branch_name)
 
     @property
     def base_branch(self):
