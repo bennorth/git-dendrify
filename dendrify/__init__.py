@@ -3,8 +3,11 @@ import pygit2 as git
 
 
 class Dendrifier:
-    def __init__(self, repository_path):
+    default_base_branch_name = 'dendrify-base'
+
+    def __init__(self, repository_path, base_branch_name=default_base_branch_name):
         self.repo = git.Repository(repository_path)
+        self.base_branch_name = base_branch_name
 
     def _create_base(self, branch_name):
         """
