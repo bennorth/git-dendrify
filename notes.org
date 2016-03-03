@@ -95,3 +95,7 @@ straightforward to create a chain of commits from the 'base'.
 Is this going to cause trouble?  Normal git tools are wary of such
 commits.  Would be annoying to have to artificially cause a diff, so
 hope nothing too bad happens.
+
+What if the linear history has some real empty commits in it?  Is this
+likely?  As long as they don't have the <s> or </s> markers in the
+message, think it doesn't matter.
