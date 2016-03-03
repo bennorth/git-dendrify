@@ -9,14 +9,17 @@ class Dendrifier:
         self.repo = git.Repository(repository_path)
         self.base_branch_name = base_branch_name
 
+    def _has_branch(self, branch_name):
+        m_existing_branch = self.repo.lookup_branch(branch_name)
+        return (m_existing_branch is not None)
+
     def _create_base(self, branch_name):
         """
         Create a branch in the repo with the given name, referring to a
         parentless commit with an empty tree.  Return the resulting Branch
         object.
         """
-        m_existing_branch = self.repo.lookup_branch(branch_name)
-        if m_existing_branch is not None:
+        if self._has_branch(branch_name):
             raise ValueError('branch "{}" already exists'.format(branch_name))
 
         tb = self.repo.TreeBuilder()
