@@ -1,6 +1,12 @@
 import pytest
 import pygit2 as git
 
+try:
+    import dendrify
+except ImportError:
+    import sys
+    sys.path.insert(0, '..')
+    import dendrify
 
 @pytest.fixture
 def empty_repo(tmpdir):
