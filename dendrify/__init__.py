@@ -38,3 +38,7 @@ class Dendrifier:
         base_branch = self.repo.create_branch(branch_name, base_commit)
 
         return base_branch
+
+    @property
+    def base_branch(self):
+        return self.repo.lookup_branch(self.base_branch_name)
