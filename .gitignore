@@ -3,3 +3,6 @@
 
 # Data for test repo
 Test-Repo/
+
+# Python auto-written files
+__pycache__/
