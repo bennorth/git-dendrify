@@ -1,5 +1,9 @@
 import time
 import pygit2 as git
+from enum import Enum
+
+
+CommitType = Enum('CommitType', 'Root SectionStart SectionEnd Normal')
 
 
 def repo_has_branch(repo, branch_name):
