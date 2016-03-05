@@ -74,6 +74,13 @@ class Dendrifier:
         return list(reversed(oids))
 
     def dendrify(self, dendrified_branch_name, linear_branch_name):
+        if repo_has_branch(self.repo, dendrified_branch_name):
+            raise ValueError('destination branch "{}" exists'
+                             .format(dendrified_branch_name))
+        if not repo_has_branch(self.repo, linear_branch_name):
+            raise ValueError('source branch "{}" does not exist'
+                             .format(linear_branch_name))
+
         section_start_ids = []
         tip = None
         for id in self.linear_ancestry(linear_branch_name):
