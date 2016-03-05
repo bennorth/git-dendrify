@@ -2,6 +2,11 @@ import time
 import pygit2 as git
 
 
+def repo_has_branch(repo, branch_name):
+    m_existing_branch = repo.lookup_branch(branch_name)
+    return (m_existing_branch is not None)
+
+
 class Dendrifier:
     default_base_branch_name = 'dendrify-base'
 
@@ -11,8 +16,7 @@ class Dendrifier:
         self._ensure_has_base()
 
     def _has_branch(self, branch_name):
-        m_existing_branch = self.repo.lookup_branch(branch_name)
-        return (m_existing_branch is not None)
+        return repo_has_branch(self.repo, branch_name)
 
     def _create_base(self, branch_name):
         """
