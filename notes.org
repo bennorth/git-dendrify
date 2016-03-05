@@ -103,3 +103,15 @@ to 'git format-patch', but web suggests (and brief experiments confirm)
 that 'git am' will baulk at them.  Might have to do them semi-manually.
 Come back to that.
 
+** Test repos as list of simple descriptors
+
+All that matters for the test data sets is that there are real changes
+to the tree to simulate a 'real' commit, and the topology of the
+resulting sectioned history.
+
+So to describe a linear history, sequence of <s>, 'normal', </s>.  When
+creating a repo to instantiate that, can (eg) make a tree with a single
+blob whose contents are the text representation of the index of that
+commit in the linear history.
+
+Call it '[' for a <s>, '.' for a 'normal commit' and ']' for </s>.
