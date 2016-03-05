@@ -66,3 +66,10 @@ class TestTransformations:
         if commit.message.startswith('</s>'):
             return ']'
         return '.'
+
+    def _test_ancestry_matches_descriptors(self, repo, oids, descrs):
+        assert len(oids) == len(descrs)
+        for oid, descr in zip(oids, descrs):
+            commit = repo[oid]
+            assert isinstance(commit, git.Commit)
+            assert self._descr_from_commit(commit) == descr
