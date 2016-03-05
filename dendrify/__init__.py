@@ -72,3 +72,26 @@ class Dendrifier:
             else:
                 oid = parents[0]
         return list(reversed(oids))
+
+    def dendrify(self, dendrified_branch_name, linear_branch_name):
+        section_start_ids = []
+        tip = None
+        for id in self.linear_ancestry(linear_branch_name):
+            commit = self.repo[id]
+            def commit_to_dest(msg, parent_ids):
+                return self.repo.create_commit(None,
+                                               commit.author, commit.committer,
+                                               msg, commit.tree_id, parent_ids)
+            if not commit.parents:
+                assert tip is None
+                tip = commit_to_dest(commit.message, [])
+            elif commit.message.startswith('<s>'):
+                tip = commit_to_dest(commit.message[3:], [tip])
+                section_start_ids.append(tip)
+            elif commit.message.startswith('</s>'):
+                start_id = section_start_ids.pop(-1)
+                tip = commit_to_dest(commit.message[4:], [start_id, tip])
+            else:
+                tip = commit_to_dest(commit.message, [tip])
+
+        self.repo.create_branch(dendrified_branch_name, self.repo[tip])
