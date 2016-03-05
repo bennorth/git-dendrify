@@ -50,6 +50,11 @@ commits reachable from that point.
 - Where do we check that we don't try to pop from an empty stack?  A
   preparatory check would allow friendlier error messages.
 
+On trying it: seems the idea of a 'base' commit isn't required after
+all.  No reason not to have a multi-rooted repo (although this is
+apparently unusual).  As long as there is a branch whose target is the
+tip, we're OK.  Might well end up deleting that stuff.
+
 
 * Dendrified to linear
 
