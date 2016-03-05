@@ -106,3 +106,35 @@ class Dendrifier:
                 tip = commit_to_dest(commit.message, [tip])
 
         self.repo.create_branch(dendrified_branch_name, self.repo[tip])
+
+    def flattened_ancestry(self, branch_name):
+        """
+        Annotated flat list of commits leading up to the current target of
+        ``branch_name``.  Each element of the list is a pair (type, oid).  The 'type' is
+        an element of the ``CommitType`` enumeration.
+        """
+        elts = []
+        section_start_oids = []
+        oid = self.repo.lookup_branch(branch_name).target
+        while True:
+            commit = self.repo[oid]
+            parents = commit.parent_ids
+            n_parents = len(parents)
+            if n_parents == 0:
+                elts.append((CommitType.Root, oid))
+                break
+            elif n_parents == 1:
+                if section_start_oids and oid == section_start_oids[-1]:
+                    elts.append((CommitType.SectionStart, oid))
+                    section_start_oids.pop(-1)
+                else:
+                    elts.append((CommitType.Normal, oid))
+                oid = parents[0]
+            elif n_parents == 2:
+                # TODO: Check the two parents are the expected way round.
+                section_start_oids.append(parents[0])
+                elts.append((CommitType.SectionEnd, oid))
+                oid = parents[1]
+            else:
+                raise ValueError('unexpected number of parents')
+        return list(reversed(elts))
