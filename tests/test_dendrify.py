@@ -58,3 +58,11 @@ class TestTransformations:
         pytest.raises_regexp(ValueError, 'branch .* already exists',
                              empty_dendrifier._create_base,
                              empty_dendrifier.base_branch_name)
+
+    def _descr_from_commit(self, commit):
+        # TODO: assert that diff to parent is empty/non-empty as reqd
+        if commit.message.startswith('<s>'):
+            return '['
+        if commit.message.startswith('</s>'):
+            return ']'
+        return '.'
