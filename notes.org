@@ -14,16 +14,6 @@ name to a commit, via '<s id="add documentation">' or more abbreviated
 '<s Add documentation>'.  Could include some redundancy to ensure
 matching end/start but probably not necessary.
 
-How to describe entire linear/flat history for tests?  As patch series?
-Use 'git format-patch' to get bunch of files, which can then be in the
-main git repo as test data.   Bit perverse but might be OK.
-
-Annoyance (of unknown magnitude) caused by 'git am' handling of empty
-commits.  Can create them fine via the (undocumented?) '--always' flag
-to 'git format-patch', but web suggests (and brief experiments confirm)
-that 'git am' will baulk at them.  Might have to do them semi-manually.
-Come back to that.
-
 Expts with pygit2 --- seems straightforward enough so far.
 
 
@@ -99,3 +89,17 @@ hope nothing too bad happens.
 What if the linear history has some real empty commits in it?  Is this
 likely?  As long as they don't have the <s> or </s> markers in the
 message, think it doesn't matter.
+
+
+* Creation of test data
+
+How to describe entire linear/flat history for tests?  As patch series?
+Use 'git format-patch' to get bunch of files, which can then be in the
+main git repo as test data.   Bit perverse but might be OK.
+
+Annoyance (of unknown magnitude) caused by 'git am' handling of empty
+commits.  Can create them fine via the (undocumented?) '--always' flag
+to 'git format-patch', but web suggests (and brief experiments confirm)
+that 'git am' will baulk at them.  Might have to do them semi-manually.
+Come back to that.
+
