@@ -73,3 +73,11 @@ class TestTransformations:
             commit = repo[oid]
             assert isinstance(commit, git.Commit)
             assert self._descr_from_commit(commit) == descr
+
+    def test_linear_ancestry(self, empty_dendrifier):
+        descrs = '[[..][..]][....]'
+        populate_repo(empty_dendrifier.repo, descrs)
+        ancestry = empty_dendrifier.linear_ancestry('linear')
+        self._test_ancestry_matches_descriptors(empty_dendrifier.repo,
+                                                ancestry[1:],
+                                                descrs)
