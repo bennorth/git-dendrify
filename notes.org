@@ -66,7 +66,8 @@ From tip, what when we hit first two-parented commit?
 It will become a </s> commit in the linear history.
 
 It should have an empty diff to exactly one of its parents.  That parent
-is the non-section-start commit.
+is the non-section-start commit.  It should be the second parent that
+has the empty diff.
 
 The other (the parent to which this commit has a non-empty diff) is the
 matching <s>.
