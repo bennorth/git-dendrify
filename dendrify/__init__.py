@@ -138,3 +138,31 @@ class Dendrifier:
             else:
                 raise ValueError('unexpected number of parents')
         return list(reversed(elts))
+
+    def linearize(self, linear_branch_name, dendrified_branch_name):
+        if repo_has_branch(self.repo, linear_branch_name):
+            raise ValueError('destination branch "{}" exists'
+                             .format(linear_branch_name))
+        if not repo_has_branch(self.repo, dendrified_branch_name):
+            raise ValueError('source branch "{}" does not exist'
+                             .format(dendrified_branch_name))
+
+        tip, parents = None, []
+        for tp, id in self.flattened_ancestry(dendrified_branch_name):
+            commit = self.repo[id]
+            def commit_to_dest(msg, parent_ids):
+                return self.repo.create_commit(None,
+                                               commit.author, commit.committer,
+                                               msg, commit.tree_id, parent_ids)
+            if tp == CommitType.Root:
+                assert not parents
+                tip = commit_to_dest(commit.message, parents)
+            elif tp == CommitType.SectionStart:
+                tip = commit_to_dest('<s>{}'.format(commit.message), parents)
+            elif tp == CommitType.SectionEnd:
+                tip = commit_to_dest('</s>{}'.format(commit.message), parents)
+            elif tp == CommitType.Normal:
+                tip = commit_to_dest(commit.message, parents)
+            parents = [tip]
+
+        self.repo.create_branch(linear_branch_name, self.repo[tip])
