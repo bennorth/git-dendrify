@@ -86,12 +86,8 @@ class Dendrifier:
                                      'exists' if exists else 'does not exist'))
 
     def dendrify(self, dendrified_branch_name, linear_branch_name):
-        if repo_has_branch(self.repo, dendrified_branch_name):
-            raise ValueError('destination branch "{}" exists'
-                             .format(dendrified_branch_name))
-        if not repo_has_branch(self.repo, linear_branch_name):
-            raise ValueError('source branch "{}" does not exist'
-                             .format(linear_branch_name))
+        self._verify_branch_existence('destination', dendrified_branch_name, False)
+        self._verify_branch_existence('source', linear_branch_name, True)
 
         section_start_ids = []
         tip = None
@@ -148,12 +144,8 @@ class Dendrifier:
         return list(reversed(elts))
 
     def linearize(self, linear_branch_name, dendrified_branch_name):
-        if repo_has_branch(self.repo, linear_branch_name):
-            raise ValueError('destination branch "{}" exists'
-                             .format(linear_branch_name))
-        if not repo_has_branch(self.repo, dendrified_branch_name):
-            raise ValueError('source branch "{}" does not exist'
-                             .format(dendrified_branch_name))
+        self._verify_branch_existence('destination', linear_branch_name, False)
+        self._verify_branch_existence('source', dendrified_branch_name, True)
 
         tip, parents = None, []
         for tp, id in self.flattened_ancestry(dendrified_branch_name):
