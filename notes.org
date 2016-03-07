@@ -121,3 +121,12 @@ blob whose contents are the text representation of the index of that
 commit in the linear history.
 
 Call it '[' for a <s>, '.' for a 'normal commit' and ']' for </s>.
+
+
+* Chains of commits not stretching all way back to root
+
+Current code takes all commits back to the parentless root commit for
+transformation.  We actually want to be able to specify a range of
+commits, e.g., start with the most recent 'develop' and transform
+everything reachable from 'linear' but not from 'develop' into a new
+branch 'dendrified'.
