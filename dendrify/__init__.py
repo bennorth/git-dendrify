@@ -77,6 +77,14 @@ class Dendrifier:
                 oid = parents[0]
         return list(reversed(oids))
 
+    def _verify_branch_existence(self, tag, branch_name, must_exist):
+        exists = repo_has_branch(self.repo, branch_name)
+        if exists != must_exist:
+            raise ValueError('{} branch "{}" {}'
+                             .format(tag,
+                                     branch_name,
+                                     'exists' if exists else 'does not exist'))
+
     def dendrify(self, dendrified_branch_name, linear_branch_name):
         if repo_has_branch(self.repo, dendrified_branch_name):
             raise ValueError('destination branch "{}" exists'
