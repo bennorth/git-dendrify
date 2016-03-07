@@ -130,3 +130,14 @@ transformation.  We actually want to be able to specify a range of
 commits, e.g., start with the most recent 'develop' and transform
 everything reachable from 'linear' but not from 'develop' into a new
 branch 'dendrified'.
+
+
+* Misc
+
+** Writing same object twice
+
+In manual linear->dendrified->linear round-trip inspection, the commits
+get the same OIDs.  Skimming the source of libgit2, and also observing
+behaviour, it does not seem to be an error to attempt to write a
+pre-existing object to the ODB.  You just get the same oid back, as
+expected.
