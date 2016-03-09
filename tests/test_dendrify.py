@@ -37,11 +37,11 @@ def populate_repo(repo, commit_descriptors):
         def commit(msg, tree_oid):
             repo.create_commit('refs/heads/linear', sig, sig,
                                msg, tree_oid, [parent.oid.hex])
-        if cd == '[':
+        if cd[0] == '[':
             commit('<s>Start work {}'.format(idx), parent.tree.oid)
-        elif cd == ']':
+        elif cd[0] == ']':
             commit('</s>Finish work {}'.format(idx), parent.tree.oid)
-        elif cd == '.':
+        elif cd[0] == '.':
             blob = repo.create_blob('{}\n'.format(idx).encode('utf-8'))
             tb = repo.TreeBuilder(parent.tree)
             tb.insert('data', blob, git.GIT_FILEMODE_BLOB)
@@ -49,6 +49,10 @@ def populate_repo(repo, commit_descriptors):
             commit('Work item {}'.format(idx), tree_oid)
         else:
             raise ValueError('unknown commit-descriptor')
+
+        if len(cd) > 1:
+            tip = repo[repo.lookup_branch('linear').target]
+            repo.create_branch(cd[1:], tip)
 
 class TestTransformations:
     def test_ensure_base(self, empty_dendrifier):
