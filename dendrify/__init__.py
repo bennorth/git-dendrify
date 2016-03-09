@@ -124,22 +124,26 @@ class Dendrifier:
 
         self.repo.create_branch(dendrified_branch_name, self.repo[tip])
 
-    def flattened_ancestry(self, branch_name):
+    def flattened_ancestry(self, base_revision, branch_name):
         """
         Annotated flat list of commits leading up to the current target of
-        ``branch_name``.  Each element of the list is a pair (type, oid).  The 'type' is
-        an element of the ``CommitType`` enumeration.
+        ``branch_name``, starting from but not including the commit referred to by
+        ``base_revision``.  Each element of the list is a pair (type, oid).  The 'type'
+        is an element of the ``CommitType`` enumeration.
         """
         elts = []
         section_start_oids = []
         oid = self.repo.lookup_branch(branch_name).target
+        base_oid = self.repo.revparse_single(base_revision).oid
         while True:
+            if oid == base_oid: break
             commit = self.repo[oid]
             parents = commit.parent_ids
             n_parents = len(parents)
             if n_parents == 0:
-                elts.append((CommitType.Root, oid))
-                break
+                # TODO: Handle case where we want to go all the way
+                # back to a root commit?
+                raise RuntimeError('reached root')
             elif n_parents == 1:
                 if section_start_oids and oid == section_start_oids[-1]:
                     elts.append((CommitType.SectionStart, oid))
