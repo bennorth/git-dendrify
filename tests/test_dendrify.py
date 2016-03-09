@@ -81,9 +81,9 @@ class TestTransformations:
     def test_linear_ancestry(self, empty_dendrifier):
         descrs = '[[..][..]][....]'
         populate_repo(empty_dendrifier.repo, descrs)
-        ancestry = empty_dendrifier.linear_ancestry('linear')
+        ancestry = empty_dendrifier.linear_ancestry('dendrify-base', 'linear')
         self._test_ancestry_matches_descriptors(empty_dendrifier.repo,
-                                                ancestry[1:],
+                                                ancestry,
                                                 descrs)
 
     def test_populate_repo(self, empty_repo):

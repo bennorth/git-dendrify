@@ -60,21 +60,21 @@ class Dendrifier:
     def base_branch(self):
         return self.repo.lookup_branch(self.base_branch_name)
 
-    def linear_ancestry(self, branch_name):
+    def linear_ancestry(self, base_revision, branch_name):
         oids = []
         oid = self.repo.lookup_branch(branch_name).target
+        base_oid = self.repo.revparse_single(base_revision).oid
         while True:
+            if oid == base_oid:
+                break
             oids.append(oid)
             commit = self.repo[oid]
             parents = commit.parent_ids
             n_parents = len(parents)
-            if n_parents == 0:
-                break
-            elif n_parents > 1:
+            if n_parents > 1:
                 raise ValueError('ancestry of "{}" is not linear'
                                  .format(branch_name))
-            else:
-                oid = parents[0]
+            oid = parents[0]
         return list(reversed(oids))
 
     def _verify_branch_existence(self, tag, branch_name, must_exist):
