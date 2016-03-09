@@ -61,6 +61,14 @@ class Dendrifier:
         return self.repo.lookup_branch(self.base_branch_name)
 
     def linear_ancestry(self, base_revision, branch_name):
+        """
+        Return a list of commits leading from the one referred to by ``base_revision``
+        (but excluding it) up to and including the commit at the tip of ``branch_name``.
+        There must be a linear ancestry chain starting at ``branch_name`` leading to
+        ``base_revision``.
+
+        TODO: Allow ancestry all the way back to a root?
+        """
         oids = []
         oid = self.repo.lookup_branch(branch_name).target
         base_oid = self.repo.revparse_single(base_revision).oid
