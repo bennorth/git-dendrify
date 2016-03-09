@@ -85,3 +85,22 @@ class TestTransformations:
         self._test_ancestry_matches_descriptors(empty_dendrifier.repo,
                                                 ancestry[1:],
                                                 descrs)
+
+    def test_populate_repo(self, empty_repo):
+        populate_repo(empty_repo, ['.', '.', '.develop', '[', '[', '.', ']', ']'])
+        repo = empty_repo  # Can't really go on calling it 'empty_repo'.
+        # Work backwards and check:
+        exp_msgs = ['</s>Finish work 7',
+                    '</s>Finish work 6',
+                    'Work item 5',
+                    '<s>Start work 4',
+                    '<s>Start work 3',
+                    'Work item 2',
+                    'Work item 1',
+                    'Work item 0']
+        tip = repo[repo.lookup_branch('linear').target]
+        for exp_msg in exp_msgs:
+            assert tip.message == exp_msg
+            assert len(tip.parents) == 1
+            tip = tip.parents[0]
+        assert repo[repo.lookup_branch('develop').target].message == exp_msgs[5]
