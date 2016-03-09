@@ -93,13 +93,13 @@ class Dendrifier:
                                      branch_name,
                                      'exists' if exists else 'does not exist'))
 
-    def dendrify(self, dendrified_branch_name, linear_branch_name):
+    def dendrify(self, dendrified_branch_name, base_revision, linear_branch_name):
         self._verify_branch_existence('destination', dendrified_branch_name, False)
         self._verify_branch_existence('source', linear_branch_name, True)
 
         section_start_ids = []
         tip = None
-        for id in self.linear_ancestry(linear_branch_name):
+        for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
                 return self.repo.create_commit(None,
