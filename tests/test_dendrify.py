@@ -147,3 +147,15 @@ class TestTransformations:
                                for idx in exp_parent_idxs]
             got_parent_oids = repo[dendrified_oid].parent_ids
             assert set(exp_parent_oids) == set(got_parent_oids)
+
+    def test_linearize(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.', '.develop',
+                             '.', '[', '[', '.', ']', ']', '.'])
+        empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+        lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
+        empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
+        lin_commit_oids_1 = empty_dendrifier.linear_ancestry('develop', 'linear-1')
+        orig_msgs = [repo[oid].message for oid in lin_commit_oids]
+        rtrp_msgs = [repo[oid].message for oid in lin_commit_oids_1]
+        assert orig_msgs == rtrp_msgs
