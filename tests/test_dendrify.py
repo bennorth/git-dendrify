@@ -110,3 +110,40 @@ class TestTransformations:
             assert len(tip.parents) == 1
             tip = tip.parents[0]
         assert repo[repo.lookup_branch('develop').target].message == exp_msgs[5]
+
+    def test_dendrify(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.', '.develop',
+                             '.', # 0 --- index in linear ancestry
+                             '[', # 1
+                             '[', # 2
+                             '.', # 3
+                             ']', # 4
+                             ']', # 5
+                             '.', # 6
+                             ])
+        empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+        lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
+        exp_links = [(6, 5), (5, 4), (5, 1), (4, 3), (4, 2),
+                     (3, 2), (2, 1), (1, 0), (0, -1)]
+
+        develop_oid = repo.lookup_branch('develop').target
+        dendrified_tip_oid = repo.lookup_branch('dendrified').target
+
+        dendrified_oid_f_msg = {}
+        for c in repo.walk(dendrified_tip_oid, git.GIT_SORT_TOPOLOGICAL):
+            if c.id == develop_oid: break
+            dendrified_oid_f_msg[c.message] = c.id
+
+        plain = dendrify.Dendrifier.plain_message_from_tagged
+        dendrified_oid_f_lin_idx = {}
+        for idx, oid in enumerate(lin_commit_oids):
+            dendrified_oid = dendrified_oid_f_msg[plain(repo[oid].message)]
+            dendrified_oid_f_lin_idx[idx] = dendrified_oid
+
+        for lin_idx, dendrified_oid in dendrified_oid_f_lin_idx.items():
+            exp_parent_idxs = [link[1] for link in exp_links if link[0] == lin_idx]
+            exp_parent_oids = [(dendrified_oid_f_lin_idx[idx] if idx >= 0 else develop_oid)
+                               for idx in exp_parent_idxs]
+            got_parent_oids = repo[dendrified_oid].parent_ids
+            assert set(exp_parent_oids) == set(got_parent_oids)
