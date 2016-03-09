@@ -78,6 +78,12 @@ class TestTransformations:
             assert isinstance(commit, git.Commit)
             assert self._descr_from_commit(commit) == descr
 
+    def test_plain_message(self):
+        plain = dendrify.Dendrifier.plain_message_from_tagged
+        assert plain('hello world') == 'hello world'
+        assert plain('<s>hello world') == 'hello world'
+        assert plain('</s>hello world') == 'hello world'
+
     def test_linear_ancestry(self, empty_dendrifier):
         descrs = '[[..][..]][....]'
         populate_repo(empty_dendrifier.repo, descrs)
