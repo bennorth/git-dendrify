@@ -55,6 +55,9 @@ all.  No reason not to have a multi-rooted repo (although this is
 apparently unusual).  As long as there is a branch whose target is the
 tip, we're OK.  Might well end up deleting that stuff.
 
+Anyway, in general we'll have an 'upstream' type reference which we'll
+go back to anyway.
+
 
 * Dendrified to linear
 
