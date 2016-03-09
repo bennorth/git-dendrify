@@ -160,26 +160,24 @@ class Dendrifier:
                 raise ValueError('unexpected number of parents')
         return list(reversed(elts))
 
-    def linearize(self, linear_branch_name, dendrified_branch_name):
+    def linearize(self, linear_branch_name, base_revision, dendrified_branch_name):
         self._verify_branch_existence('destination', linear_branch_name, False)
         self._verify_branch_existence('source', dendrified_branch_name, True)
 
-        tip, parents = None, []
-        for tp, id in self.flattened_ancestry(dendrified_branch_name):
+        tip = self.repo.revparse_single(base_revision).oid
+        for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
                 return self.repo.create_commit(None,
                                                commit.author, commit.committer,
                                                msg, commit.tree_id, parent_ids)
             if tp == CommitType.Root:
-                assert not parents
-                tip = commit_to_dest(commit.message, parents)
+                raise RuntimeError('encountered root commit')
             elif tp == CommitType.SectionStart:
-                tip = commit_to_dest('<s>{}'.format(commit.message), parents)
+                tip = commit_to_dest('<s>{}'.format(commit.message), [tip])
             elif tp == CommitType.SectionEnd:
-                tip = commit_to_dest('</s>{}'.format(commit.message), parents)
+                tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
             elif tp == CommitType.Normal:
-                tip = commit_to_dest(commit.message, parents)
-            parents = [tip]
+                tip = commit_to_dest(commit.message, [tip])
 
         self.repo.create_branch(linear_branch_name, self.repo[tip])
