@@ -106,17 +106,14 @@ class Dendrifier:
         self._verify_branch_existence('source', linear_branch_name, True)
 
         section_start_ids = []
-        tip = None
+        tip = self.repo.revparse_single(base_revision).oid
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
                 return self.repo.create_commit(None,
                                                commit.author, commit.committer,
                                                msg, commit.tree_id, parent_ids)
-            if not commit.parents:
-                assert tip is None
-                tip = commit_to_dest(commit.message, [])
-            elif commit.message.startswith('<s>'):
+            if commit.message.startswith('<s>'):
                 tip = commit_to_dest(commit.message[3:], [tip])
                 section_start_ids.append(tip)
             elif commit.message.startswith('</s>'):
