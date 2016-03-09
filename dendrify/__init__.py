@@ -60,6 +60,14 @@ class Dendrifier:
     def base_branch(self):
         return self.repo.lookup_branch(self.base_branch_name)
 
+    @staticmethod
+    def plain_message_from_tagged(msg):
+        if msg.startswith('<s>'):
+            return msg[3:]
+        if msg.startswith('</s>'):
+            return msg[4:]
+        return msg
+
     def linear_ancestry(self, base_revision, branch_name):
         """
         Return a list of commits leading from the one referred to by ``base_revision``
