@@ -144,3 +144,12 @@ get the same OIDs.  Skimming the source of libgit2, and also observing
 behaviour, it does not seem to be an error to attempt to write a
 pre-existing object to the ODB.  You just get the same oid back, as
 expected.
+
+
+* Experience of actual use
+
+Tried it with re-structuring flat list of commits in python-xml-serdes.
+Under new magit, was pretty easy to add appropriate empty commits to
+start sections, and to reword existing labelled 'merge point' empty
+commits.  Then the dendrify code worked nicely and quickly: c120ms (felt
+instantaneous) for c.70 commits.
