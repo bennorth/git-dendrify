@@ -120,7 +120,8 @@ class Dendrifier:
                 section_start_ids.append(tip)
             elif commit.message.startswith('</s>'):
                 start_id = section_start_ids.pop(-1)
-                tip = commit_to_dest(commit.message[4:], [start_id, tip])
+                msg = commit.message[4:]
+                tip = commit_to_dest(msg, [start_id, tip])
             else:
                 tip = commit_to_dest(commit.message, [tip])
 
