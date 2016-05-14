@@ -182,5 +182,7 @@ class Dendrifier:
                 tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
             elif tp == CommitType.Normal:
                 tip = commit_to_dest(commit.message, [tip])
+            elif tp == CommitType.SectionEndAndStart:
+                tip = commit_to_dest('</s>{}<s>'.format(commit.message), [tip])
 
         self.repo.create_branch(linear_branch_name, self.repo[tip])
