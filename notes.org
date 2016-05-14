@@ -160,4 +160,12 @@ redundant and not what would be done manually.  See next section.
 
 * Make empty section-start commits optional
 
-TODO
+Normally, the next feature branch just launches straight off the merge
+commit which brought in the previous feature branch.  That commit,
+therefore, is both a section-end and a section-start commit.
+
+** Initial attempt
+
+Design so far is that the commit message needs to start with the special
+</s> sequence, and then end with <s>, to say a new section starts
+straight away.
