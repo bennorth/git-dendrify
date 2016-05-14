@@ -101,18 +101,23 @@ class TestTransformations:
                                                 ancestry,
                                                 descrs)
 
-    def test_populate_repo(self, empty_repo):
-        populate_repo(empty_repo, ['.', '.', '.develop', '[', '[', '.', ']', ']'])
+    @pytest.mark.parametrize(
+        'repo_descr, exp_msgs',
+        [(['.', '.', '.develop', '[', '[', '.', ']', ']'],
+          ['</s>Finish work 7',
+           '</s>Finish work 6',
+           'Work item 5',
+           '<s>Start work 4',
+           '<s>Start work 3',
+           'Work item 2',
+           'Work item 1',
+           'Work item 0'])],
+        ids=['nested'])
+    #
+    def test_populate_repo(self, empty_repo, repo_descr, exp_msgs):
+        populate_repo(empty_repo, repo_descr)
         repo = empty_repo  # Can't really go on calling it 'empty_repo'.
         # Work backwards and check:
-        exp_msgs = ['</s>Finish work 7',
-                    '</s>Finish work 6',
-                    'Work item 5',
-                    '<s>Start work 4',
-                    '<s>Start work 3',
-                    'Work item 2',
-                    'Work item 1',
-                    'Work item 0']
         tip = repo[repo.lookup_branch('linear').target]
         for exp_msg in exp_msgs:
             assert tip.message == exp_msg
