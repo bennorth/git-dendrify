@@ -83,6 +83,7 @@ class TestTransformations:
         assert plain('hello world') == 'hello world'
         assert plain('<s>hello world') == 'hello world'
         assert plain('</s>hello world') == 'hello world'
+        assert plain('</s>hello world<s>') == 'hello world'
 
     def test_linear_ancestry(self, empty_dendrifier):
         descrs = '[[..][..]][....]'
