@@ -155,9 +155,13 @@ class Dendrifier:
                     elts.append((CommitType.Normal, oid))
                 oid = parents[0]
             elif n_parents == 2:
+                if section_start_oids and oid == section_start_oids[-1]:
+                    elts.append((CommitType.SectionEndAndStart, oid))
+                    section_start_oids.pop(-1)
+                else:
+                    elts.append((CommitType.SectionEnd, oid))
                 # TODO: Check the two parents are the expected way round.
                 section_start_oids.append(parents[0])
-                elts.append((CommitType.SectionEnd, oid))
                 oid = parents[1]
             else:
                 raise ValueError('unexpected number of parents')
