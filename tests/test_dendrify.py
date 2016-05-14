@@ -85,8 +85,12 @@ class TestTransformations:
         assert plain('</s>hello world') == 'hello world'
         assert plain('</s>hello world<s>') == 'hello world'
 
-    def test_linear_ancestry(self, empty_dendrifier):
-        descrs = '[[..][..]][....]'
+    @pytest.mark.parametrize(
+        'descrs',
+        ['[[..][..]][....]'],
+        ids=['nested'])
+    #
+    def test_linear_ancestry(self, empty_dendrifier, descrs):
         populate_repo(empty_dendrifier.repo, descrs)
         ancestry = empty_dendrifier.linear_ancestry('dendrify-base', 'linear')
         self._test_ancestry_matches_descriptors(empty_dendrifier.repo,
