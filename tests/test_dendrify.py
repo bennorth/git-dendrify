@@ -145,7 +145,7 @@ class TestTransformations:
                              '[', # 1
                              '[', # 2
                              '.', # 3
-                             '.', # 4
+                             '|', # 4
                              '.', # 5
                              ']', # 6
                              ']', # 7
@@ -153,7 +153,7 @@ class TestTransformations:
                              ])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
-        exp_links = [(8, 7), (7, 6), (7, 1), (6, 5), (6, 2),
+        exp_links = [(8, 7), (7, 6), (7, 1), (6, 5), (6, 4), (4, 2),
                      (5, 4), (4, 3), (3, 2), (2, 1), (1, 0), (0, -1)]
 
         develop_oid = repo.lookup_branch('develop').target
@@ -180,7 +180,7 @@ class TestTransformations:
     def test_linearize(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.', '.', '.develop',
-                             '.', '[', '[', '.', ']', ']', '.'])
+                             '.', '[', '[', '.', '|', '.', ']', ']', '.'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
         empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
