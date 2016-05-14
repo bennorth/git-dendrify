@@ -121,7 +121,12 @@ class Dendrifier:
             elif commit.message.startswith('</s>'):
                 start_id = section_start_ids.pop(-1)
                 msg = commit.message[4:]
+                also_start_p = msg.endswith('<s>')
+                if also_start_p:
+                    msg = msg[:-3]
                 tip = commit_to_dest(msg, [start_id, tip])
+                if also_start_p:
+                    section_start_ids.append(tip)
             else:
                 tip = commit_to_dest(commit.message, [tip])
 
