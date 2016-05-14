@@ -41,6 +41,8 @@ def populate_repo(repo, commit_descriptors):
             commit('<s>Start work {}'.format(idx), parent.tree.oid)
         elif cd[0] == ']':
             commit('</s>Finish work {}'.format(idx), parent.tree.oid)
+        elif cd[0] == '|':
+            commit('</s>Finish work {}, starting new<s>'.format(idx), parent.tree.oid)
         elif cd[0] == '.':
             blob = repo.create_blob('{}\n'.format(idx).encode('utf-8'))
             tb = repo.TreeBuilder(parent.tree)
@@ -68,6 +70,8 @@ class TestTransformations:
         if commit.message.startswith('<s>'):
             return '['
         if commit.message.startswith('</s>'):
+            if commit.message.endswith('<s>'):
+                return '|'
             return ']'
         return '.'
 
