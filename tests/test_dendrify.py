@@ -91,8 +91,8 @@ class TestTransformations:
 
     @pytest.mark.parametrize(
         'descrs',
-        ['[[..][..]][....]'],
-        ids=['nested'])
+        ['[[..][..]][....]', '[..]..[..|...|..]'],
+        ids=['nested', 'with-end-starts'])
     #
     def test_linear_ancestry(self, empty_dendrifier, descrs):
         populate_repo(empty_dendrifier.repo, descrs)
