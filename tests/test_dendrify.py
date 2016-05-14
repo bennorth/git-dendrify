@@ -111,8 +111,21 @@ class TestTransformations:
            '<s>Start work 3',
            'Work item 2',
            'Work item 1',
-           'Work item 0'])],
-        ids=['nested'])
+           'Work item 0']),
+         (['[', '.', '|', '.', ']', '.', '.develop', '[', '[', '.', ']', ']'],
+          ['</s>Finish work 11',
+           '</s>Finish work 10',
+           'Work item 9',
+           '<s>Start work 8',
+           '<s>Start work 7',
+           'Work item 6',
+           'Work item 5',
+           '</s>Finish work 4',
+           'Work item 3',
+           '</s>Finish work 2, starting new<s>',
+           'Work item 1',
+           '<s>Start work 0'])],
+        ids=['nested', 'with-end-start'])
     #
     def test_populate_repo(self, empty_repo, repo_descr, exp_msgs):
         populate_repo(empty_repo, repo_descr)
