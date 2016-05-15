@@ -198,3 +198,41 @@ the commit message?
 
 Include more context in error messages.  [...]
 #+END_EXAMPLE
+
+
+* Tag a normal non-empty commit as section-starting?
+
+Does anything actually rely on the usual emptiness of the section-start
+commit?  If not, could just tag /any/ commit.  But it would be nice to
+tag the first commit of a section (feature branch), not the last one of
+the previous run of standalone commits.  So it is not the case that the
+tagged commit is the multi-children'd one.
+
+Would the following work?  Showing tags as part of a dendrified history,
+which wouldn't normally be the case:
+
+#+BEGIN_EXAMPLE
+  *   </s>Add printing feature
+  |\
+  | * Allow configuration
+  | * </s>Implement driver
+  | |\
+  | | * Check parity
+  | | * Set up flow control
+  | | * <s>Define serial port
+  | |/
+  | * <s>Emit control codes
+  |/
+  * Fix typo
+  * This is version 1.2.3
+  * (Minor code style clean-ups)
+  *   </s>Allow choice of language
+  |\
+  | * Add French, German
+  | * Move existing strings to xln framework
+  | * <s>Set up translations framework
+  |/
+  * --BASE-- This is version 1.2.2
+  :
+  :
+#+END_EXAMPLE
