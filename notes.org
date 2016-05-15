@@ -169,3 +169,32 @@ therefore, is both a section-end and a section-start commit.
 Design so far is that the commit message needs to start with the special
 </s> sequence, and then end with <s>, to say a new section starts
 straight away.
+
+This is clunky for multi-line commit messages though.
+
+** Alternatives
+
+Try </s><s> at the start instead?  Not convinced:  That might give the
+impression that the commit messages belongs to the <s> tag (i.e.,
+describes the section that's about to start), whereas in fact the
+message describes the work done in the section just closing.  E.g.:
+
+</s><s>Error-reporting improvements
+
+Add a '+', aimimg for some vague analogy with the meaning of '+' in the
+'mode' argument of an fopen() call?
+
+<s+>Error-reporting improvements
+
+or
+
+</s+>Error-reporting improvements
+
+Make the <s> be at the end of the first line (i.e., the 'subject') of
+the commit message?
+
+#+BEGIN_EXAMPLE
+</s>Error-reporting improvements<s>
+
+Include more context in error messages.  [...]
+#+END_EXAMPLE
