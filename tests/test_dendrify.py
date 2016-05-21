@@ -1,6 +1,7 @@
 import pytest
 import pygit2 as git
 import time
+import os
 
 try:
     import dendrify
@@ -8,6 +9,8 @@ except ImportError:
     import sys
     sys.path.insert(0, '..')
     import dendrify
+
+import dendrify.cli
 
 
 @pytest.fixture
@@ -231,3 +234,12 @@ class TestTransformations:
         pytest.raises_regexp(ValueError, '"linear" is not an ancestor of "develop"',
                              empty_dendrifier.linear_ancestry,
                              'linear', 'develop')
+
+
+class TestCommandLine:
+    def test_no_repo_found(self, tmpdir):
+        subdir = os.path.join(tmpdir.strpath, 'not-a-git-repo')
+        os.mkdir(subdir)
+        exp_msg = 'could not find git repo starting from {}'.format(subdir)
+        pytest.raises_regexp(ValueError, exp_msg,
+                             dendrify.cli.dendrifier_for_path, subdir, tmpdir.strpath)
