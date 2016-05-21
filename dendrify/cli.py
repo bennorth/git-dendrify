@@ -18,7 +18,7 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing=''):
         repo = git.discover_repository(dirname, False, _ceiling_dir_for_testing)
     except KeyError:
         raise ValueError('could not find git repo starting from {}'.format(dirname))
-    return dendrify.Dendrifier(repo)
+    return dendrify.Dendrifier(repo, report=dendrify.ReportToStdout())
 
 def main():
     args = docopt.docopt(__doc__, version='git-dendrify {}'.format(__version__))
