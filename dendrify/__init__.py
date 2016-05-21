@@ -108,6 +108,7 @@ class Dendrifier:
                 section_start_ids.append(tip)
                 tip = commit_to_dest(commit.message[3:], [tip])
             elif commit.message.startswith('</s>'):
+                # TODO: Better behaviour if no start-ids at this point.
                 start_id = section_start_ids.pop(-1)
                 msg = commit.message[4:]
                 also_start_p = msg.endswith('<s>')
