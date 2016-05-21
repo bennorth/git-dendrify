@@ -17,12 +17,13 @@ import dendrify
 import docopt
 from dendrify._version import __version__
 
-def dendrifier_for_path(dirname, _ceiling_dir_for_testing=''):
+def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=False):
     try:
         repo = git.discover_repository(dirname, False, _ceiling_dir_for_testing)
     except KeyError:
         raise ValueError('could not find git repo starting from {}'.format(dirname))
-    return dendrify.Dendrifier(repo, report=dendrify.ReportToStdout())
+    kwargs = {'report': dendrify.ReportToStdout()} if report_to_stdout else {}
+    return dendrify.Dendrifier(repo, **kwargs)
 
 def main():
     args = docopt.docopt(__doc__, version='git-dendrify {}'.format(__version__))
