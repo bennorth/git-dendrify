@@ -108,6 +108,11 @@ class Dendrifier:
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
+                report_txt = ('{sha1}{indent} * {subject}'
+                              .format(indent='  ' * len(section_start_ids),
+                                      sha1=str(new_oid)[:12],
+                                      subject=msg.split('\n', 1)[0][:80]))
+                self.report(report_txt)
                 return new_oid
             if commit.message.startswith('<s>'):
                 section_start_ids.append(tip)
