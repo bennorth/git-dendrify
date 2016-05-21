@@ -241,3 +241,8 @@ which wouldn't normally be the case:
   :
   :
 #+END_EXAMPLE
+
+Which commit gets labelled with which type?  Maybe the 'EndAndStart'
+type goes away, if we're calling the <s> commits the 'Start' ones?
+I.e., a 'Start' commit is a single-parent'd commit whose (sole) parent
+has another child besides the commit under consideration.
