@@ -58,9 +58,6 @@ def populate_repo(repo, commit_descriptors):
             repo.create_branch(cd[1:], tip)
 
 class TestTransformations:
-    def test_ensure_base(self, empty_dendrifier):
-        assert empty_dendrifier.base_branch is not None
-
     def test_base_recreation_caught(self, empty_dendrifier):
         pytest.raises_regexp(ValueError, 'branch .* already exists',
                              empty_dendrifier._create_base,
