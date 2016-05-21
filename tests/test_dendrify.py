@@ -26,11 +26,11 @@ def test_empty_repo(empty_repo):
 
 
 def populate_repo(repo, commit_descriptors):
-    assert not dendrify.repo_has_branch(repo, 'linear')
-    linear_branch = dendrify.create_base(repo, 'linear')
-
     # TODO: Extract from config.
     sig = git.Signature('Nobody', 'nobody@example.com', time=int(time.time()))
+
+    assert not dendrify.repo_has_branch(repo, 'linear')
+    linear_branch = dendrify.create_base(repo, 'linear')
 
     for idx, cd in enumerate(commit_descriptors):
         parent = repo[repo.lookup_branch('linear').target]
