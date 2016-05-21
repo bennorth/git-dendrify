@@ -29,8 +29,9 @@ def populate_repo(repo, commit_descriptors):
     # TODO: Extract from config.
     sig = git.Signature('Nobody', 'nobody@example.com', time=int(time.time()))
 
-    assert not dendrify.repo_has_branch(repo, 'linear')
-    linear_branch = dendrify.create_base(repo, 'linear')
+    assert not dendrify.repo_has_branch(repo, 'test-base')
+    base_commit = repo[dendrify.create_base(repo, 'test-base').target]
+    repo.create_branch('linear', base_commit)
 
     for idx, cd in enumerate(commit_descriptors):
         parent = repo[repo.lookup_branch('linear').target]
@@ -96,7 +97,7 @@ class TestTransformations:
     #
     def test_linear_ancestry(self, empty_dendrifier, descrs):
         populate_repo(empty_dendrifier.repo, descrs)
-        ancestry = empty_dendrifier.linear_ancestry('dendrify-base', 'linear')
+        ancestry = empty_dendrifier.linear_ancestry('test-base', 'linear')
         self._test_ancestry_matches_descriptors(empty_dendrifier.repo,
                                                 ancestry,
                                                 descrs)
