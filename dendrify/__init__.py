@@ -63,8 +63,6 @@ class Dendrifier:
         (but excluding it) up to and including the commit at the tip of ``branch_name``.
         There must be a linear ancestry chain starting at ``branch_name`` leading back
         to ``base_revision``.
-
-        TODO: Allow ancestry all the way back to a root?
         """
         oids = []
         oid = self.repo.lookup_branch(branch_name).target
