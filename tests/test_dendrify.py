@@ -189,9 +189,9 @@ class TestTransformations:
         # Get repo started then manually create 'swapped' merge; we have to
         # try quite hard to arrange this as git tries quite hard to stop you
         # making that mistake.
-        populate_repo(repo, ['.dev', '.', '.', '.'], branch_name='dendrified_0')
+        populate_repo(repo, ['.dev', '.', '.', '.'], branch_name='dendrified-0')
         feature_start_parent = repo.revparse_single('dev')
-        tip = repo.revparse_single('dendrified_0')
+        tip = repo.revparse_single('dendrified-0')
         sig = dendrify.create_signature(repo)
         merge_oid = repo.create_commit(None, sig, sig, 'swapped merge test',
                                        tip.tree_id, [tip.oid, feature_start_parent.oid])
@@ -212,7 +212,7 @@ class TestTransformations:
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         pytest.raises_regexp(ValueError, 'ancestry of "dendrified" is not linear',
                              empty_dendrifier.dendrify,
-                             'dendrified_2', 'develop', 'dendrified')
+                             're-dendrified', 'develop', 'dendrified')
 
     def test_dendrified_ancestry_reaches_root(self, empty_dendrifier):
         repo = empty_dendrifier.repo
@@ -221,7 +221,7 @@ class TestTransformations:
         # Deliberately swap args so that base is not ancestor of branch:
         pytest.raises_regexp(ValueError, '"dendrified" is not an ancestor of "develop"',
                              empty_dendrifier.linearize,
-                             'linear_1', 'dendrified', 'develop')
+                             'linear-1', 'dendrified', 'develop')
 
     def test_linear_ancestry_reaches_root(self, empty_dendrifier):
         repo = empty_dendrifier.repo
