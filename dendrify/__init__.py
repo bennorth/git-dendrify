@@ -140,9 +140,8 @@ class Dendrifier:
             parents = commit.parent_ids
             n_parents = len(parents)
             if n_parents == 0:
-                # TODO: Handle case where we want to go all the way
-                # back to a root commit?
-                raise RuntimeError('reached root')
+                raise ValueError('"{}" is not an ancestor of "{}"'
+                                 .format(base_revision, branch_name))
             elif n_parents == 1:
                 parent_id = parents[0]
                 if section_start_oids and parent_id == section_start_oids[-1]:
