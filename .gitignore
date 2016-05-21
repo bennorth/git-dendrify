@@ -6,6 +6,7 @@ Test-Repo/
 
 # Python auto-written files
 __pycache__/
+*.pyc
 
 # py.test cache
 .cache/
