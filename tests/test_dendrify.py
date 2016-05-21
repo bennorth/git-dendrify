@@ -205,3 +205,11 @@ class TestTransformations:
         pytest.raises_regexp(
             ValueError, 'unexpected section-end at .* \(no section in progress\)',
             empty_dendrifier.dendrify, 'dendrified', 'develop', 'linear')
+
+    def test_nonlinear_ancestry(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '.', '.', '[', '.', '.', ']'])
+        empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+        pytest.raises_regexp(ValueError, 'ancestry of "dendrified" is not linear',
+                             empty_dendrifier.dendrify,
+                             'dendrified_2', 'develop', 'dendrified')
