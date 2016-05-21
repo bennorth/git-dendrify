@@ -3,7 +3,7 @@ import pygit2 as git
 from enum import Enum
 
 
-CommitType = Enum('CommitType', 'Root SectionStart SectionEndAndStart SectionEnd Normal')
+CommitType = Enum('CommitType', 'Root SectionStart SectionEnd Normal')
 
 
 def repo_has_branch(repo, branch_name):
@@ -149,11 +149,7 @@ class Dendrifier:
                     elts.append((CommitType.Normal, oid))
                 oid = parents[0]
             elif n_parents == 2:
-                if section_start_oids and oid == section_start_oids[-1]:
-                    elts.append((CommitType.SectionEndAndStart, oid))
-                    section_start_oids.pop(-1)
-                else:
-                    elts.append((CommitType.SectionEnd, oid))
+                elts.append((CommitType.SectionEnd, oid))
                 # TODO: Check the two parents are the expected way round.
                 section_start_oids.append(parents[0])
                 oid = parents[1]
@@ -180,7 +176,5 @@ class Dendrifier:
                 tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
             elif tp == CommitType.Normal:
                 tip = commit_to_dest(commit.message, [tip])
-            elif tp == CommitType.SectionEndAndStart:
-                tip = commit_to_dest('</s>{}<s>'.format(commit.message), [tip])
 
         self.repo.create_branch(linear_branch_name, self.repo[tip])
