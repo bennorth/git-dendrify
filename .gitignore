@@ -10,3 +10,6 @@ __pycache__/
 
 # py.test cache
 .cache/
+
+# setuptools build products
+*.egg-info/
