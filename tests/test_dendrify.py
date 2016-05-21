@@ -26,8 +26,7 @@ def test_empty_repo(empty_repo):
 
 
 def populate_repo(repo, commit_descriptors):
-    # TODO: Extract from config.
-    sig = git.Signature('Nobody', 'nobody@example.com', time=int(time.time()))
+    sig = dendrify.create_signature(repo)
 
     assert not dendrify.repo_has_branch(repo, 'test-base')
     base_commit = repo[dendrify.create_base(repo, 'test-base').target]

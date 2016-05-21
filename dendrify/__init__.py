@@ -11,6 +11,12 @@ def repo_has_branch(repo, branch_name):
     return (m_existing_branch is not None)
 
 
+def create_signature(repo):
+    return git.Signature(repo.config['user.name'],
+                         repo.config['user.email'],
+                         time=int(time.time()))
+
+
 def create_base(repo, branch_name):
     """
     Create a branch in the repo with the given name, referring to a
@@ -23,9 +29,7 @@ def create_base(repo, branch_name):
     tb = repo.TreeBuilder()
     empty_tree_oid = tb.write()
 
-    # TODO: Extract from config.
-    sig = git.Signature('Nobody', 'nobody@example.com', time=int(time.time()))
-
+    sig = create_signature(repo)
     base_commit_oid = repo.create_commit(None,
                                          sig, sig,
                                          "Base commit for dendrify",
