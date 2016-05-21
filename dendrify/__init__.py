@@ -78,6 +78,9 @@ class Dendrifier:
             if len(parents) > 1:
                 raise ValueError('ancestry of "{}" is not linear'
                                  .format(branch_name))
+            if not parents:
+                raise ValueError('"{}" is not an ancestor of "{}"'
+                                 .format(base_revision, branch_name))
             oid = parents[0]
         return list(reversed(oids))
 
