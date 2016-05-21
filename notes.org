@@ -226,6 +226,11 @@ which wouldn't normally be the case:
   * Fix typo
   * This is version 1.2.3
   * (Minor code style clean-ups)
+  *   </s>Add colour-picker
+  |\
+  | * Translate colour names
+  | * <s>Set up defaults
+  |/
   *   </s>Allow choice of language
   |\
   | * Add French, German
