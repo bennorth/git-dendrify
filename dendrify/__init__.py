@@ -1,4 +1,5 @@
 import time
+import sys
 import pygit2 as git
 from enum import Enum
 
@@ -40,6 +41,12 @@ def create_base(repo, branch_name):
     base_branch = repo.create_branch(branch_name, base_commit)
 
     return base_branch
+
+
+class ReportToStdout:
+    def __call__(self, msg):
+        sys.stdout.write(msg)
+        sys.stdout.write('\n')
 
 
 class DoNotReport:
