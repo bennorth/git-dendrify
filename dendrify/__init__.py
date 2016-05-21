@@ -185,12 +185,3 @@ class Dendrifier:
                 tip = commit_to_dest(commit.message, [tip])
 
         self.repo.create_branch(linear_branch_name, self.repo[tip])
-
-
-if __name__ == '__main__':
-    import os, sys
-    repo = git.discover_repository(os.getcwd())
-    dendrifier = Dendrifier(repo)
-    action_name, tgt_branch, base_branch, src_branch = sys.argv[1:]
-    action = getattr(dendrifier, action_name)
-    action(tgt_branch, base_branch, src_branch)
