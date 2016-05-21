@@ -99,9 +99,10 @@ class Dendrifier:
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
-                return self.repo.create_commit(None,
-                                               commit.author, commit.committer,
-                                               msg, commit.tree_id, parent_ids)
+                new_oid = self.repo.create_commit(None,
+                                                  commit.author, commit.committer,
+                                                  msg, commit.tree_id, parent_ids)
+                return new_oid
             if commit.message.startswith('<s>'):
                 section_start_ids.append(tip)
                 tip = commit_to_dest(commit.message[3:], [tip])
@@ -172,9 +173,10 @@ class Dendrifier:
         for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
-                return self.repo.create_commit(None,
-                                               commit.author, commit.committer,
-                                               msg, commit.tree_id, parent_ids)
+                new_oid = self.repo.create_commit(None,
+                                                  commit.author, commit.committer,
+                                                  msg, commit.tree_id, parent_ids)
+                return new_oid
             if tp == CommitType.Root:
                 raise RuntimeError('encountered root commit')
             elif tp == CommitType.SectionStart:
