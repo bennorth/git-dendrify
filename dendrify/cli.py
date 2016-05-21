@@ -7,6 +7,7 @@ Usage:
   git-dendrify linearize <new-branch> <base-commit> <dendrified-commit>
 """
 
+import os
 import pygit2 as git
 import dendrify
 import docopt
@@ -21,3 +22,14 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing=''):
 
 def main():
     args = docopt.docopt(__doc__, version='git-dendrify {}'.format(__version__))
+    dendrifier = dendrifier_for_path(os.getcwd())
+    if args['dendrify']:
+        dendrifier.dendrify(args['<new-branch>'],
+                            args['<base-commit>'],
+                            args['<linear-commit>'])
+    elif args['linearize']:
+        dendrifier.linearize(args['<new-branch>'],
+                             args['<base-commit>'],
+                             args['<dendrified-commit>'])
+    else:
+        raise ValueError('unknown action')
