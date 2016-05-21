@@ -5,6 +5,10 @@ Usage:
   git-dendrify --version
   git-dendrify dendrify <new-branch> <base-commit> <linear-commit>
   git-dendrify linearize <new-branch> <base-commit> <dendrified-commit>
+
+Options:
+  -h --help    Show this help info
+  --version    Display version info and exit
 """
 
 import os
