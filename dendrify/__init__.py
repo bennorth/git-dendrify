@@ -75,8 +75,7 @@ class Dendrifier:
             oids.append(oid)
             commit = self.repo[oid]
             parents = commit.parent_ids
-            n_parents = len(parents)
-            if n_parents > 1:
+            if len(parents) > 1:
                 raise ValueError('ancestry of "{}" is not linear'
                                  .format(branch_name))
             oid = parents[0]
