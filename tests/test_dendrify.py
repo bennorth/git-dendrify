@@ -25,17 +25,18 @@ def test_empty_repo(empty_repo):
     assert len(all_refs) == 0
 
 
-def populate_repo(repo, commit_descriptors):
+def populate_repo(repo, commit_descriptors, branch_name='linear'):
     sig = dendrify.create_signature(repo)
 
     assert not dendrify.repo_has_branch(repo, 'test-base')
     base_commit = repo[dendrify.create_base(repo, 'test-base').target]
-    repo.create_branch('linear', base_commit)
+    repo.create_branch(branch_name, base_commit)
+    ref_name = 'refs/heads/{}'.format(branch_name)
 
     for idx, cd in enumerate(commit_descriptors):
-        parent = repo[repo.lookup_branch('linear').target]
+        parent = repo[repo.lookup_branch(branch_name).target]
         def commit(msg, tree_oid):
-            repo.create_commit('refs/heads/linear', sig, sig,
+            repo.create_commit(ref_name, sig, sig,
                                msg, tree_oid, [parent.oid.hex])
         if cd[0] == '[':
             commit('<s>Start work {}'.format(idx), parent.tree.oid)
@@ -51,7 +52,7 @@ def populate_repo(repo, commit_descriptors):
             raise ValueError('unknown commit-descriptor')
 
         if len(cd) > 1:
-            tip = repo[repo.lookup_branch('linear').target]
+            tip = repo[repo.lookup_branch(branch_name).target]
             repo.create_branch(cd[1:], tip)
 
 class TestTransformations:
