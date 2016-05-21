@@ -8,6 +8,8 @@ with open('dendrify/_version.py') as f_in:
 setup(
     name='gitdendrify',
     version=_version,
+    install_requires=['pygit2', 'docopt'],
+    tests_require=['pytest', 'pytest-raisesregexp'],
     packages=find_packages(),
     entry_points={
         'console_scripts': ['git-dendrify = dendrify.cli:main']},
