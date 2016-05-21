@@ -13,3 +13,5 @@ __pycache__/
 
 # setuptools build products
 *.egg-info/
+dist/
+
