@@ -3,12 +3,13 @@
 Usage:
   git-dendrify (-h | --help)
   git-dendrify --version
-  git-dendrify dendrify <new-branch> <base-commit> <linear-commit>
-  git-dendrify linearize <new-branch> <base-commit> <dendrified-commit>
+  git-dendrify dendrify [options] <new-branch> <base-commit> <linear-commit>
+  git-dendrify linearize [options] <new-branch> <base-commit> <dendrified-commit>
 
 Options:
   -h --help    Show this help info
   --version    Display version info and exit
+  -q --quiet   Do not print commits as they are made
 """
 
 import os
@@ -27,7 +28,8 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=F
 
 def main():
     args = docopt.docopt(__doc__, version='git-dendrify {}'.format(__version__))
-    dendrifier = dendrifier_for_path(os.getcwd())
+    dendrifier = dendrifier_for_path(os.getcwd(),
+                                     report_to_stdout=(not args['--quiet']))
     if args['dendrify']:
         dendrifier.dendrify(args['<new-branch>'],
                             args['<base-commit>'],
