@@ -41,8 +41,6 @@ def populate_repo(repo, commit_descriptors):
             commit('<s>Start work {}'.format(idx), parent.tree.oid)
         elif cd[0] == ']':
             commit('</s>Finish work {}'.format(idx), parent.tree.oid)
-        elif cd[0] == '|':
-            commit('</s>Finish work {}, starting new<s>'.format(idx), parent.tree.oid)
         elif cd[0] == '.':
             blob = repo.create_blob('{}\n'.format(idx).encode('utf-8'))
             tb = repo.TreeBuilder(parent.tree)
@@ -67,8 +65,6 @@ class TestTransformations:
         if commit.message.startswith('<s>'):
             return '['
         if commit.message.startswith('</s>'):
-            if commit.message.endswith('<s>'):
-                return '|'
             return ']'
         return '.'
 
@@ -87,8 +83,8 @@ class TestTransformations:
 
     @pytest.mark.parametrize(
         'descrs',
-        ['[[..][..]][....]', '[..]..[..|...|..]'],
-        ids=['nested', 'with-end-starts'])
+        ['[[..][..]][....]', '[..]..[..][...][..]'],
+        ids=['nested', 'with-singles'])
     #
     def test_linear_ancestry(self, empty_dendrifier, descrs):
         populate_repo(empty_dendrifier.repo, descrs)
@@ -176,7 +172,7 @@ class TestTransformations:
     def test_linearize(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.', '.', '.develop',
-                             '.', '[', '[', '.', '|', '.', ']', ']', '.'])
+                             '.', '[', '[', '.', ']', '[', '.', '.', ']', ']', '.'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
         empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
