@@ -214,7 +214,7 @@ class TestTransformations:
                              empty_dendrifier.dendrify,
                              'dendrified_2', 'develop', 'dendrified')
 
-    def test_ancestry_reaches_root(self, empty_dendrifier):
+    def test_linear_ancestry_reaches_root(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '.', '.'])
         # Deliberately swap args to linear_ancestry() such that the
