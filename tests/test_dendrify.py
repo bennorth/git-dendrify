@@ -183,3 +183,18 @@ class TestTransformations:
         orig_msgs = [repo[oid].message for oid in lin_commit_oids]
         rtrp_msgs = [repo[oid].message for oid in lin_commit_oids_1]
         assert orig_msgs == rtrp_msgs
+
+    def test_linearize_swapped_parents(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        # Get repo started then manually create 'swapped' merge; we have to
+        # try quite hard to arrange this as git tries quite hard to stop you
+        # making that mistake.
+        populate_repo(repo, ['.dev', '.', '.', '.'], branch_name='dendrified_0')
+        feature_start_parent = repo.revparse_single('dev')
+        tip = repo.revparse_single('dendrified_0')
+        sig = dendrify.create_signature(repo)
+        merge_oid = repo.create_commit(None, sig, sig, 'swapped merge test',
+                                       tip.tree_id, [tip.oid, feature_start_parent.oid])
+        repo.create_branch('dendrified', repo[merge_oid])
+        pytest.raises_regexp(ValueError, 'expected .* to be pure merge',
+                             empty_dendrifier.linearize, 'linear', 'dev', 'dendrified')
