@@ -105,8 +105,8 @@ class Dendrifier:
                                                commit.author, commit.committer,
                                                msg, commit.tree_id, parent_ids)
             if commit.message.startswith('<s>'):
-                tip = commit_to_dest(commit.message[3:], [tip])
                 section_start_ids.append(tip)
+                tip = commit_to_dest(commit.message[3:], [tip])
             elif commit.message.startswith('</s>'):
                 start_id = section_start_ids.pop(-1)
                 msg = commit.message[4:]
@@ -142,7 +142,8 @@ class Dendrifier:
                 # back to a root commit?
                 raise RuntimeError('reached root')
             elif n_parents == 1:
-                if section_start_oids and oid == section_start_oids[-1]:
+                parent_id = parents[0]
+                if section_start_oids and parent_id == section_start_oids[-1]:
                     elts.append((CommitType.SectionStart, oid))
                     section_start_oids.pop(-1)
                 else:
