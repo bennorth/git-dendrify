@@ -61,8 +61,8 @@ class Dendrifier:
         """
         Return a list of commits leading from the one referred to by ``base_revision``
         (but excluding it) up to and including the commit at the tip of ``branch_name``.
-        There must be a linear ancestry chain starting at ``branch_name`` leading to
-        ``base_revision``.
+        There must be a linear ancestry chain starting at ``branch_name`` leading back
+        to ``base_revision``.
 
         TODO: Allow ancestry all the way back to a root?
         """
