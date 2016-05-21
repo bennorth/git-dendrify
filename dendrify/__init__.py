@@ -42,9 +42,15 @@ def create_base(repo, branch_name):
     return base_branch
 
 
+class DoNotReport:
+    def __call__(self, msg):
+        pass
+
+
 class Dendrifier:
-    def __init__(self, repository_path):
+    def __init__(self, repository_path, report=DoNotReport()):
         self.repo = git.Repository(repository_path)
+        self.report = report
 
     def _has_branch(self, branch_name):
         return repo_has_branch(self.repo, branch_name)
