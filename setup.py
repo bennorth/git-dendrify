@@ -9,4 +9,6 @@ setup(
     name = 'gitdendrify',
     version = _version,
     packages = find_packages(),
+    entry_points={
+        'console_scripts': ['git-dendrify = dendrify.cli:main']},
 )
