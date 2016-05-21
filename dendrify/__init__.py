@@ -96,7 +96,6 @@ class Dendrifier:
         self._verify_branch_existence('destination', dendrified_branch_name, False)
         self._verify_branch_existence('source', linear_branch_name, True)
 
-        # TODO: Seed with base-revision to handle eg '....]'?
         section_start_ids = []
 
         tip = self.repo.revparse_single(base_revision).oid
