@@ -187,6 +187,10 @@ class Dendrifier:
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
+                report_txt = ('{sha1} * {subject}'
+                              .format(sha1=str(new_oid)[:12],
+                                      subject=msg.split('\n', 1)[0][:80]))
+                self.report(report_txt)
                 return new_oid
             if tp == CommitType.Root:
                 raise RuntimeError('encountered root commit')
