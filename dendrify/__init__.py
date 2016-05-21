@@ -39,26 +39,11 @@ def create_base(repo, branch_name):
 
 
 class Dendrifier:
-    default_base_branch_name = 'dendrify-base'
-
-    def __init__(self, repository_path, base_branch_name=default_base_branch_name):
+    def __init__(self, repository_path):
         self.repo = git.Repository(repository_path)
-        self.base_branch_name = base_branch_name
-        self._ensure_has_base()
 
     def _has_branch(self, branch_name):
         return repo_has_branch(self.repo, branch_name)
-
-    def _create_base(self, branch_name):
-        return create_base(self.repo, branch_name)
-
-    def _ensure_has_base(self):
-        if not self._has_branch(self.base_branch_name):
-            self._create_base(self.base_branch_name)
-
-    @property
-    def base_branch(self):
-        return self.repo.lookup_branch(self.base_branch_name)
 
     @staticmethod
     def plain_message_from_tagged(msg):
