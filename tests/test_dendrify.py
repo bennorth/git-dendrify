@@ -213,3 +213,12 @@ class TestTransformations:
         pytest.raises_regexp(ValueError, 'ancestry of "dendrified" is not linear',
                              empty_dendrifier.dendrify,
                              'dendrified_2', 'develop', 'dendrified')
+
+    def test_ancestry_reaches_root(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '.', '.'])
+        # Deliberately swap args to linear_ancestry() such that the
+        # 'base' is not an ancestor of the branch:
+        pytest.raises_regexp(ValueError, '"linear" is not an ancestor of "develop"',
+                             empty_dendrifier.linear_ancestry,
+                             'linear', 'develop')
