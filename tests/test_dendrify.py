@@ -198,3 +198,10 @@ class TestTransformations:
         repo.create_branch('dendrified', repo[merge_oid])
         pytest.raises_regexp(ValueError, 'expected .* to be pure merge',
                              empty_dendrifier.linearize, 'linear', 'dev', 'dendrified')
+
+    def test_wrong_nesting(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '.', '.', ']'])
+        pytest.raises_regexp(
+            ValueError, 'unexpected section-end at .* \(no section in progress\)',
+            empty_dendrifier.dendrify, 'dendrified', 'develop', 'linear')
