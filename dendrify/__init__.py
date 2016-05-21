@@ -152,7 +152,12 @@ class Dendrifier:
                 oid = parents[0]
             elif n_parents == 2:
                 elts.append((CommitType.SectionEnd, oid))
-                # TODO: Check the two parents are the expected way round.
+                # parent[0] should be the 'main' branch, into which
+                # parent[1] was merged; therefore we expect no diff
+                # w.r.t. parent[1]:
+                diff = self.repo.diff(self.repo[oid], self.repo[parents[1]])
+                if len(diff) > 0:
+                    raise ValueError('expected {} to be pure merge'.format(oid))
                 section_start_oids.append(parents[0])
                 oid = parents[1]
             else:
