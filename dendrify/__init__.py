@@ -54,8 +54,6 @@ class Dendrifier:
         if msg.startswith('<s>'):
             return msg[3:]
         if msg.startswith('</s>'):
-            if msg.endswith('<s>'):
-                return msg[4:-3]
             return msg[4:]
         return msg
 

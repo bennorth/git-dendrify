@@ -84,7 +84,6 @@ class TestTransformations:
         assert plain('hello world') == 'hello world'
         assert plain('<s>hello world') == 'hello world'
         assert plain('</s>hello world') == 'hello world'
-        assert plain('</s>hello world<s>') == 'hello world'
 
     @pytest.mark.parametrize(
         'descrs',
