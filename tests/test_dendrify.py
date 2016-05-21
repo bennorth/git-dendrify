@@ -58,10 +58,10 @@ def populate_repo(repo, commit_descriptors):
             repo.create_branch(cd[1:], tip)
 
 class TestTransformations:
-    def test_base_recreation_caught(self, empty_dendrifier):
-        pytest.raises_regexp(ValueError, 'branch .* already exists',
-                             empty_dendrifier._create_base,
-                             empty_dendrifier.base_branch_name)
+    def test_base_recreation_caught(self, empty_repo):
+        dendrify.create_base(empty_repo, 'test-base')
+        pytest.raises_regexp(ValueError, 'branch "test-base" already exists',
+                             dendrify.create_base, empty_repo, 'test-base')
 
     def _descr_from_commit(self, commit):
         # TODO: assert that diff to parent is empty/non-empty as reqd
