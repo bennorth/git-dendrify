@@ -97,7 +97,6 @@ class Dendrifier:
         self._verify_branch_existence('source', linear_branch_name, True)
 
         section_start_ids = []
-
         tip = self.repo.revparse_single(base_revision).oid
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
