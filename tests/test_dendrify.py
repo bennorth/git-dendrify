@@ -5,13 +5,7 @@ import os
 from io import StringIO
 import sys
 
-try:
-    import dendrify
-except ImportError:
-    import sys
-    sys.path.insert(0, '..')
-    import dendrify
-
+import dendrify
 import dendrify.cli
 
 
