@@ -4,6 +4,7 @@ import time
 import os
 from io import StringIO
 import sys
+import docopt
 from contextlib import contextmanager
 
 import dendrify
@@ -313,3 +314,8 @@ class TestCommandLine:
         os.makedirs(subdir)
         dendrifier = dendrify.cli.dendrifier_for_path(subdir)
         assert dendrifier.repo.path == empty_repo.path
+
+    def test_bad_command(self):
+        pytest.raises_regexp(docopt.DocoptExit, 'Usage:',
+                             dendrify.cli.main,
+                             _argv=['hello', 'world'])
