@@ -177,7 +177,8 @@ class TestTransformations:
             tip = tip.parents[0]
         assert repo[repo.lookup_branch('develop').target].message == exp_msgs[5]
 
-    def test_dendrify(self, empty_dendrifier):
+    @pytest.mark.parametrize('how', ['directly', 'via-cli'])
+    def test_dendrify(self, empty_dendrifier, how):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.', '.', '.develop',
                              '.', # 0 --- index in linear ancestry
@@ -191,7 +192,12 @@ class TestTransformations:
                              ']', # 8
                              '.', # 9
                              ])
-        empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+
+        if how == 'directly':
+            empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+        elif how == 'via-cli':
+            with temporary_cwd_within_repo(repo):
+                dendrify.cli.main(_argv=['dendrify', 'dendrified', 'develop', 'linear'])
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
         exp_links = [(9, 8), (8, 7), (8, 0), (7, 6), (7, 4), (6, 5),
                      (5, 4), (4, 3), (4, 1), (3, 2), (2, 1), (1, 0), (0, -1)]
@@ -217,13 +223,18 @@ class TestTransformations:
             got_parent_oids = repo[dendrified_oid].parent_ids
             assert set(exp_parent_oids) == set(got_parent_oids)
 
-    def test_linearize(self, empty_dendrifier):
+    @pytest.mark.parametrize('how', ['directly', 'via-cli'])
+    def test_linearize(self, empty_dendrifier, how):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.', '.', '.develop',
                              '.', '[', '[', '.', ']', '[', '.', '.', ']', ']', '.'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
-        empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
+        if how == 'directly':
+            empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
+        elif how == 'via-cli':
+            with temporary_cwd_within_repo(repo):
+                dendrify.cli.main(_argv=['linearize', 'linear-1', 'develop', 'dendrified'])
         lin_commit_oids_1 = empty_dendrifier.linear_ancestry('develop', 'linear-1')
         orig_msgs = [repo[oid].message for oid in lin_commit_oids]
         rtrp_msgs = [repo[oid].message for oid in lin_commit_oids_1]
