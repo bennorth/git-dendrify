@@ -194,11 +194,12 @@ class TestTransformations:
                              '.', # 9
                              ])
 
+        args = ['dendrified', 'develop', 'linear']
         if how == 'directly':
-            empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+            empty_dendrifier.dendrify(*args)
         elif how == 'via-cli':
             with temporary_cwd_within_repo(repo):
-                dendrify.cli.main(_argv=['dendrify', 'dendrified', 'develop', 'linear'])
+                dendrify.cli.main(_argv=['dendrify'] + args)
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
         exp_links = [(9, 8), (8, 7), (8, 0), (7, 6), (7, 4), (6, 5),
                      (5, 4), (4, 3), (4, 1), (3, 2), (2, 1), (1, 0), (0, -1)]
@@ -231,11 +232,13 @@ class TestTransformations:
                              '.', '[', '[', '.', ']', '[', '.', '.', ']', ']', '.'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
+
+        args = ['linear-1', 'develop', 'dendrified']
         if how == 'directly':
-            empty_dendrifier.linearize('linear-1', 'develop', 'dendrified')
+            empty_dendrifier.linearize(*args)
         elif how == 'via-cli':
             with temporary_cwd_within_repo(repo):
-                dendrify.cli.main(_argv=['linearize', 'linear-1', 'develop', 'dendrified'])
+                dendrify.cli.main(_argv=['linearize'] + args)
         lin_commit_oids_1 = empty_dendrifier.linear_ancestry('develop', 'linear-1')
         orig_msgs = [repo[oid].message for oid in lin_commit_oids]
         rtrp_msgs = [repo[oid].message for oid in lin_commit_oids_1]
