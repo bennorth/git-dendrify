@@ -26,8 +26,8 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=F
     kwargs = {'report': dendrify.ReportToStdout()} if report_to_stdout else {}
     return dendrify.Dendrifier(repo, **kwargs)
 
-def main():
-    args = docopt.docopt(__doc__, version='git-dendrify {}'.format(__version__))
+def main(_argv=None):
+    args = docopt.docopt(__doc__, argv=_argv, version='git-dendrify {}'.format(__version__))
     dendrifier = dendrifier_for_path(os.getcwd(),
                                      report_to_stdout=(not args['--quiet']))
     if args['dendrify']:
