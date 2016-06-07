@@ -39,4 +39,5 @@ def main(_argv=None):
                              args['<base-commit>'],
                              args['<dendrified-commit>'])
     else:
-        raise ValueError('unknown action')
+        raise RuntimeError('unknown action'
+                           ' (docopt should have handled this situation)')  # pragma nocover
