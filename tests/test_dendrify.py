@@ -84,6 +84,23 @@ class TestTransformations:
                              empty_dendrifier.dendrify,
                              'dendrified', 'test-base', 'linear')
 
+    def test_octopus_caught(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        base = dendrify.create_base(repo, 'test-base')
+        base_tree_oid = repo[base.target].tree.oid
+
+        sig = dendrify.create_signature(repo)
+        def empty_commit(msg):
+            return repo.create_commit(None, sig, sig,
+                                      msg, base_tree_oid, [base.target.hex])
+        commits = [empty_commit(str(i)) for i in range(3)]
+        octopus = repo.create_commit(None, sig, sig, 'octopus', base_tree_oid, commits)
+        repo.create_branch('octopus', repo[octopus])
+
+        pytest.raises_regexp(ValueError, 'unexpected number of parents',
+                             empty_dendrifier.linearize,
+                             'linear', 'test-base', 'octopus')
+
     def _descr_from_commit(self, commit):
         # TODO: assert that diff to parent is empty/non-empty as reqd
         if commit.message.startswith('<s>'):
