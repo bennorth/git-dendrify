@@ -66,6 +66,24 @@ class TestTransformations:
         pytest.raises_regexp(ValueError, 'branch "test-base" already exists',
                              dendrify.create_base, empty_repo, 'test-base')
 
+    def test_destination_branch_exists_caught(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        # Doesn't really matter that these branches are unrelated:
+        dendrify.create_base(repo, 'test-base')
+        dendrify.create_base(repo, 'dendrified')
+        dendrify.create_base(repo, 'linear')
+        pytest.raises_regexp(ValueError, 'destination branch "dendrified" exists',
+                             empty_dendrifier.dendrify,
+                             'dendrified', 'test-base', 'linear')
+
+    def test_source_branch_does_not_exist_caught(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        # Doesn't really matter that these branches are unrelated:
+        dendrify.create_base(repo, 'test-base')
+        pytest.raises_regexp(ValueError, 'source branch "linear" does not exist',
+                             empty_dendrifier.dendrify,
+                             'dendrified', 'test-base', 'linear')
+
     def _descr_from_commit(self, commit):
         # TODO: assert that diff to parent is empty/non-empty as reqd
         if commit.message.startswith('<s>'):
