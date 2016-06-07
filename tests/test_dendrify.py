@@ -4,9 +4,20 @@ import time
 import os
 from io import StringIO
 import sys
+from contextlib import contextmanager
 
 import dendrify
 import dendrify.cli
+
+@contextmanager
+def temporary_cwd_within_repo(repo):
+    dir = os.path.realpath(os.path.join(repo.path, '..'))
+    try:
+        saved_cwd = os.getcwd()
+        os.chdir(dir)
+        yield
+    finally:
+        os.chdir(saved_cwd)
 
 
 @pytest.fixture
