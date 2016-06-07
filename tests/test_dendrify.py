@@ -284,3 +284,10 @@ class TestCommandLine:
         exp_msg = 'could not find git repo starting from {}'.format(subdir)
         pytest.raises_regexp(ValueError, exp_msg,
                              dendrify.cli.dendrifier_for_path, subdir, tmpdir.strpath)
+
+    def test_construct_dendrifier(self, empty_repo):
+        repo_top = os.path.realpath(os.path.join(empty_repo.path, '..'))
+        subdir = os.path.join(repo_top, 'foo', 'bar', 'baz')
+        os.makedirs(subdir)
+        dendrifier = dendrify.cli.dendrifier_for_path(subdir)
+        assert dendrifier.repo.path == empty_repo.path
