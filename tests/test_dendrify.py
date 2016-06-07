@@ -2,6 +2,8 @@ import pytest
 import pygit2 as git
 import time
 import os
+from io import StringIO
+import sys
 
 try:
     import dendrify
@@ -237,6 +239,16 @@ class TestTransformations:
 
 
 class TestCommandLine:
+    def test_reporting(self):
+        try:
+            # Don't really like this, but:
+            saved_stdout = sys.stdout
+            sys.stdout = captured_io = StringIO()
+            dendrify.ReportToStdout()('hello world')
+            assert captured_io.getvalue() == 'hello world\n'
+        finally:
+            sys.stdout = saved_stdout
+
     def test_no_repo_found(self, tmpdir):
         subdir = os.path.join(tmpdir.strpath, 'not-a-git-repo')
         os.mkdir(subdir)
