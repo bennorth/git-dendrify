@@ -4,7 +4,7 @@ import pygit2 as git
 from enum import Enum
 
 
-CommitType = Enum('CommitType', 'Root SectionStart SectionEnd Normal')
+CommitType = Enum('CommitType', 'SectionStart SectionEnd Normal')
 
 
 def repo_has_branch(repo, branch_name):
@@ -191,9 +191,7 @@ class Dendrifier:
                                       subject=msg.split('\n', 1)[0][:80]))
                 self.report(report_txt)
                 return new_oid
-            if tp == CommitType.Root:
-                raise RuntimeError('encountered root commit')
-            elif tp == CommitType.SectionStart:
+            if tp == CommitType.SectionStart:
                 tip = commit_to_dest('<s>{}'.format(commit.message), [tip])
             elif tp == CommitType.SectionEnd:
                 tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
