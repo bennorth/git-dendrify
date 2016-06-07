@@ -5,6 +5,7 @@
 Test-Repo/
 
 # Python auto-written files
+build/
 __pycache__/
 *.pyc
 
@@ -15,3 +16,6 @@ __pycache__/
 *.egg-info/
 dist/
 
+# Coverage products
+.coverage
+htmlcov/
