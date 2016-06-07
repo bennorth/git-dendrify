@@ -23,7 +23,11 @@ def temporary_cwd_within_repo(repo):
 
 @pytest.fixture
 def empty_repo(tmpdir):
-    return git.init_repository(tmpdir.strpath)
+    repo = git.init_repository(tmpdir.strpath)
+    cfg = repo.config
+    cfg['user.name'] = 'J.R. Hacker'
+    cfg['user.email'] = 'j.r.hacker@example.com'
+    return repo
 
 
 @pytest.fixture
