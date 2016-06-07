@@ -59,9 +59,6 @@ class Dendrifier:
         self.repo = git.Repository(repository_path)
         self.report = report
 
-    def _has_branch(self, branch_name):
-        return repo_has_branch(self.repo, branch_name)
-
     @staticmethod
     def plain_message_from_tagged(msg):
         if msg.startswith('<s>'):
