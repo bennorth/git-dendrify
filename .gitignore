@@ -19,3 +19,6 @@ dist/
 # Coverage products
 .coverage
 htmlcov/
+
+# Rendering output
+README.html
