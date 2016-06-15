@@ -539,3 +539,9 @@ handle mutable history in this case, but have a couple of thoughts:
 
 Now it is pretty much set in stone, and changing the history can
 inconvenience many people.
+
+
+---
+
+This README: Copyright 2016 Ben North; licensed under
+[CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/)
