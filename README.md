@@ -54,8 +54,8 @@ Suppose we are working on a word-processor, and we have released
 simplified flat list of commits to achieve this might be as follows,
 most recent at the top:
 
-<pre>
-<span style="color:#000">* Allow choice of colour for printing watermarks
+```
+* Allow choice of colour for printing watermarks
 * Add known-good test cases for watermarks
 * Emit watermark 'underneath' main output (printing)
 * Drop-down for printing common watermarks
@@ -69,19 +69,19 @@ most recent at the top:
 * Add selection box for which printer
 * Parse 'chosen pages' input like '5-8,11,12-15'
 * Allow free-form CSV list of pages
-* Radio list for 'pages' UI: current, all, chosen</span>
-<span style="color:#888">* Release v0.8.0
-* Add spell-checker</span>
+* Radio list for 'pages' UI: current, all, chosen
+* Release v0.8.0
+* Add spell-checker
 :
 :
-</pre>
+```
 
 Now suppose we could present this work in 'sections', such as when
 writing an article or paper.  There is a natural fit for this tree-like
 structure in terms of `git` merge commits:
 
-<pre>
-<span style="color:#000">* Add printing facility
+```
+* Add printing facility
 |\
 | * Add watermarks
 | |\
@@ -114,12 +114,12 @@ structure in terms of `git` merge commits:
 | | * Radio list: current, all, chosen
 | |/
 | |
-|/</span>
-<span style="color:#666">* Release v0.8.0
-* Add spell-checker</span>
+|/
+* Release v0.8.0
+* Add spell-checker
 :
 :
-</pre>
+```
 
 
 ### Advantages of hierarchical presentation
@@ -238,56 +238,53 @@ commit 'subjects'.  (See also the
 The `git dendrify` tool then allows transformation back and forth
 between the two structures:
 
-<pre>
-                -------------------------[ linearize ]-----------------------&gt;
+```
+                -------------------------[ linearize ]----------------------->
 
-                &lt;------------------------[ dendrify ]-------------------------
+                <------------------------[ dendrify ]-------------------------
 
-* Add printing facility                               * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add printing facility [empty]
+* Add printing facility                               * </s>Add printing facility [empty]
 |\                                                    |
-| * Add watermarks                                    * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add watermarks [empty]
+| * Add watermarks                                    * </s>Add watermarks [empty]
 | |\                                                  |
 | | * Allow choice of colour                          * Allow choice of colour
 | | * Add known-good test cases                       * Add known-good test cases
 | | * Emit watermark 'underneath' main output         * Emit watermark 'underneath' main output
-| | * Drop-down for common watermarks                 * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Drop-down for common watermarks
+| | * Drop-down for common watermarks                 * <s>Drop-down for common watermarks
 | |/                                                  |
-| * Add actual printing via PDF                       * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add actual printing via PDF [empty]
+| * Add actual printing via PDF                       * </s>Add actual printing via PDF [empty]
 | |\                                                  |
 | | * Submit PDF to system print service              * Submit PDF to system print service
 | | * Add known-good test cases                       * Add known-good test cases
-| | * Generate PDF                                    * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Generate PDF
+| | * Generate PDF                                    * <s>Generate PDF
 | |/                                                  |
-| * Add paper selection UI                            * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add paper selection UI [empty]
+| * Add paper selection UI                            * </s>Add paper selection UI [empty]
 | |\                                                  |
 | | * Sort choices alphabetically                     * Sort choices alphabetically
 | | * Read paper size choices from database           * Read paper size choices from database
-| | * Add selection box for paper sizes               * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Add selection box for paper sizes
+| | * Add selection box for paper sizes               * <s>Add selection box for paper sizes
 | |/                                                  |
-| * Add printer selection UI                          * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add printer selection UI [empty]
+| * Add printer selection UI                          * </s>Add printer selection UI [empty]
 | |\                                                  |
 | | * Read printer list from system                   * Read printer list from system
-| | * Add selection box for which printer             * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Add selection box for which printer
+| | * Add selection box for which printer             * <s>Add selection box for which printer
 | |/                                                  |
-| * Add page selection UI                             * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</span>Add page selection UI [empty]
+| * Add page selection UI                             * </s>Add page selection UI [empty]
 | |\                                                  |
 | | * Parse input like '5-8,11,12-15'                 * Parse input like '5-8,11,12-15'
 | | * Allow free-form CSV list of pages               * Allow free-form CSV list of pages
-| | * Radio list: current, all, chosen                * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Radio list: current, all, chosen
+| | * Radio list: current, all, chosen                * <s>Radio list: current, all, chosen
 | |/                                                  |
-| * Start work on 'print' dialog [empty]              * <span style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</span>Start work on 'print' dialog [empty]
+| * Start work on 'print' dialog [empty]              * <s>Start work on 'print' dialog [empty]
 |/                                                    |
-<span style="color:#666">* Release v0.8.0                                      * Release v0.8.0
-* Add spell-checker                                   * Add spell-checker</span>
+* Release v0.8.0                                      * Release v0.8.0
+* Add spell-checker                                   * Add spell-checker
 :                                                     :
 :                                                     :
-</pre>
+```
 
-The magic labelling strings have been highlighted (<code
-style="color:#000;background-color:#ddf;font-weight:bold">&lt;s&gt;</code>
-and <code
-style="color:#000;background-color:#ddf;font-weight:bold">&lt;/s&gt;</code>)
-in the linearized history shown in the right-hand column.
+The magic labelling strings (`<s>` and `</s>`) are visible in the
+linearized history shown in the right-hand column.
 
 
 ### Usage
@@ -408,7 +405,7 @@ even richer use of the `git` history would be better?  Taking some
 liberties with the following two-dimensional commit graph, and
 abbreviating commit messages a bit, we could have:
 
-<pre style="font-size:75%">
+```
 * Add printing facility
 |\
 | * Add actual printing via PDF
@@ -432,7 +429,7 @@ abbreviating commit messages a bit, we could have:
 |/
 * Release v0.8.0
 * Add spell-checker
-</pre>
+```
 
 This illustrates the situation where the four UI strands required to let
 the user describe what they want printed and how are independent of each
