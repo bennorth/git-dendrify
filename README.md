@@ -41,6 +41,10 @@ children about programming.  This seems an under-explored area, although
 it has been discussed; for example, by Tauber in his
 ['Versioned Literate Programming for Tutorials'](https://thoughtstreams.io/jtauber/versioned-literate-programming-for-tutorials/).
 
+- **Update 20160813:** See
+  [my `literate-git` project](https://github.com/bennorth/literate-git)
+  for a fuller explanation of this idea, including a demo.
+
 The idea need not be restricted to the presentation of a complete
 program.  Making pieces of incremental development more readable is a
 worthwhile goal.  For example, if a pull request can be presented as a
