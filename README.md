@@ -504,6 +504,18 @@ itself, which has to handle large numbers of active topic branches.
 
 * [howto/maintain-git.txt](https://github.com/git/git/blob/master/Documentation/howto/maintain-git.txt)
 
+### git series
+
+A structured history can perhaps be considered in its own right as an
+object to be version-controlled.  The `git series` tool addresses this:
+
+> git series tracks changes to a patch series over time.  git series
+> also tracks a cover letter for the patch series, formats the series
+> for email, and prepares pull requests.
+
+* ['git series' on GitHub](https://github.com/git-series/git-series/)
+
+
 ---
 
 ## <a name="ok-to-rewrite-history"></a>Appendix: How acceptable is it to re-write history?
