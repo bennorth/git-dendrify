@@ -38,10 +38,21 @@ it, especially if that history is 'designed for readability'?
 One particular application I have in mind is for producing histories
 which are explicitly intended as tutorial material, say for teaching
 children about programming.  This seems an under-explored area, although
-it has been discussed; for example, by Tauber in his
-['Versioned Literate Programming for Tutorials'](https://thoughtstreams.io/jtauber/versioned-literate-programming-for-tutorials/).
+it has been discussed:
 
-- **Update 20160813:** See
+- Tauber talks about the two dimensions of versioning (as you read
+  through the history of the repo; and as the repo itself is developed)
+  in his
+  ['Versioned Literate Programming for Tutorials'](https://thoughtstreams.io/jtauber/versioned-literate-programming-for-tutorials/).
+- Giles Bowkett describes his use of a git repo as support
+  material for his
+  [book on Rails development](http://gilesbowkett.blogspot.ie/2016/10/modern-front-end-development-with-ruby_12.html):
+  "A code base isn't a finished product, it's a continuum over time, and
+  with a git repo, it's a *carefully indexed* continuum over time. I think
+  that's an important aspect of making code clear, so I first did all my
+  code-related research in other repos, and then built these repos so
+  that the repos would themselves be easy to read".
+- **Update 20160813:** See also
   [my `literate-git` project](https://github.com/bennorth/literate-git)
   for a fuller explanation of this idea, including a demo.
 
