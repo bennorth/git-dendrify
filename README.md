@@ -52,6 +52,8 @@ it has been discussed:
   that's an important aspect of making code clear, so I first did all my
   code-related research in other repos, and then built these repos so
   that the repos would themselves be easy to read".
+- Jon Aquino talks about interspersing explanation with code in ['Git
+  commit messages are the new Literate Programming'](http://jona.ca/blog/git-commit-messages-are-the-new-literate-programming).
 - **Update 20160813:** See also
   [my `literate-git` project](https://github.com/bennorth/literate-git)
   for a fuller explanation of this idea, including a demo.
