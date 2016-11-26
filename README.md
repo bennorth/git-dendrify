@@ -28,7 +28,10 @@ idea goes back at least to Knuth's
 > want a computer to do.
 
 A good example of this approach is Pfaff's presentation of
-[GNU libavl](http://adtinfo.org/).
+[GNU libavl](http://adtinfo.org/).  While not being 'literate
+programming' as such, it is related that when designing
+the [Raft Consensus Algorithm](https://raft.github.io/), the authors
+state that the 'primary goal was _understandability_'.
 
 I've been wondering whether treating the code as a static snapshot is
 missing a whole dimension in explanatory power.  Can we use the
