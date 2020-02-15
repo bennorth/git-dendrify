@@ -1,5 +1,5 @@
 # git-dendrify --- transform git histories (tests)
-# Copyright (C) 2016 Ben North
+# Copyright (C) 2016, 2020 Ben North
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,8 +89,8 @@ def populate_repo(repo, commit_descriptors, branch_name='linear'):
 class TestTransformations:
     def test_base_recreation_caught(self, empty_repo):
         dendrify.create_base(empty_repo, 'test-base')
-        pytest.raises_regexp(ValueError, 'branch "test-base" already exists',
-                             dendrify.create_base, empty_repo, 'test-base')
+        with pytest.raises(ValueError, match='branch "test-base" already exists'):
+            dendrify.create_base(empty_repo, 'test-base')
 
     def test_destination_branch_exists_caught(self, empty_dendrifier):
         repo = empty_dendrifier.repo
@@ -98,17 +98,15 @@ class TestTransformations:
         dendrify.create_base(repo, 'test-base')
         dendrify.create_base(repo, 'dendrified')
         dendrify.create_base(repo, 'linear')
-        pytest.raises_regexp(ValueError, 'destination branch "dendrified" exists',
-                             empty_dendrifier.dendrify,
-                             'dendrified', 'test-base', 'linear')
+        with pytest.raises(ValueError, match='destination branch "dendrified" exists'):
+            empty_dendrifier.dendrify('dendrified', 'test-base', 'linear')
 
     def test_source_branch_does_not_exist_caught(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         # Doesn't really matter that these branches are unrelated:
         dendrify.create_base(repo, 'test-base')
-        pytest.raises_regexp(ValueError, 'source branch "linear" does not exist',
-                             empty_dendrifier.dendrify,
-                             'dendrified', 'test-base', 'linear')
+        with pytest.raises(ValueError, match='source branch "linear" does not exist'):
+            empty_dendrifier.dendrify('dendrified', 'test-base', 'linear')
 
     def test_octopus_caught(self, empty_dendrifier):
         repo = empty_dendrifier.repo
@@ -123,9 +121,8 @@ class TestTransformations:
         octopus = repo.create_commit(None, sig, sig, 'octopus', base_tree_oid, commits)
         repo.create_branch('octopus', repo[octopus])
 
-        pytest.raises_regexp(ValueError, 'unexpected number of parents',
-                             empty_dendrifier.linearize,
-                             'linear', 'test-base', 'octopus')
+        with pytest.raises(ValueError, match='unexpected number of parents'):
+            empty_dendrifier.linearize('linear', 'test-base', 'octopus')
 
     def _descr_from_commit(self, commit):
         # TODO: assert that diff to parent is empty/non-empty as reqd
@@ -276,41 +273,38 @@ class TestTransformations:
         merge_oid = repo.create_commit(None, sig, sig, 'swapped merge test',
                                        tip.tree_id, [tip.oid, feature_start_parent.oid])
         repo.create_branch('dendrified', repo[merge_oid])
-        pytest.raises_regexp(ValueError, 'expected .* to be pure merge',
-                             empty_dendrifier.linearize, 'linear', 'dev', 'dendrified')
+        with pytest.raises(ValueError, match='expected .* to be pure merge'):
+            empty_dendrifier.linearize('linear', 'dev', 'dendrified')
 
     def test_wrong_nesting(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '.', '.', ']'])
-        pytest.raises_regexp(
-            ValueError, 'unexpected section-end at .* \(no section in progress\)',
-            empty_dendrifier.dendrify, 'dendrified', 'develop', 'linear')
+        with pytest.raises(ValueError,
+                           match=r'unexpected section-end at .* \(no section in progress\)'):
+            empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
 
     def test_nonlinear_ancestry(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '.', '.', '[', '.', '.', ']'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
-        pytest.raises_regexp(ValueError, 'ancestry of "dendrified" is not linear',
-                             empty_dendrifier.dendrify,
-                             're-dendrified', 'develop', 'dendrified')
+        with pytest.raises(ValueError, match='ancestry of "dendrified" is not linear'):
+            empty_dendrifier.dendrify('re-dendrified', 'develop', 'dendrified')
 
     def test_dendrified_ancestry_reaches_root(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '.', '.', '[', '.', '.', ']'])
         empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
         # Deliberately swap args so that base is not ancestor of branch:
-        pytest.raises_regexp(ValueError, '"dendrified" is not an ancestor of "develop"',
-                             empty_dendrifier.linearize,
-                             'linear-1', 'dendrified', 'develop')
+        with pytest.raises(ValueError, match='"dendrified" is not an ancestor of "develop"'):
+            empty_dendrifier.linearize('linear-1', 'dendrified', 'develop')
 
     def test_linear_ancestry_reaches_root(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '.', '.'])
         # Deliberately swap args to linear_ancestry() such that the
         # 'base' is not an ancestor of the branch:
-        pytest.raises_regexp(ValueError, '"linear" is not an ancestor of "develop"',
-                             empty_dendrifier.linear_ancestry,
-                             'linear', 'develop')
+        with pytest.raises(ValueError, match='"linear" is not an ancestor of "develop"'):
+            empty_dendrifier.linear_ancestry('linear', 'develop')
 
 
 class TestCommandLine:
@@ -328,8 +322,8 @@ class TestCommandLine:
         subdir = os.path.join(tmpdir.strpath, 'not-a-git-repo')
         os.mkdir(subdir)
         exp_msg = 'could not find git repo starting from {}'.format(subdir)
-        pytest.raises_regexp(ValueError, exp_msg,
-                             dendrify.cli.dendrifier_for_path, subdir, tmpdir.strpath)
+        with pytest.raises(ValueError, match=exp_msg):
+            dendrify.cli.dendrifier_for_path(subdir, tmpdir.strpath)
 
     def test_construct_dendrifier(self, empty_repo):
         repo_top = os.path.realpath(os.path.join(empty_repo.path, '..'))
@@ -339,6 +333,5 @@ class TestCommandLine:
         assert dendrifier.repo.path == empty_repo.path
 
     def test_bad_command(self):
-        pytest.raises_regexp(docopt.DocoptExit, 'Usage:',
-                             dendrify.cli.main,
-                             _argv=['hello', 'world'])
+        with pytest.raises(docopt.DocoptExit, match='Usage:'):
+            dendrify.cli.main(_argv=['hello', 'world'])
