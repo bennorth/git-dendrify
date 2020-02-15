@@ -1,5 +1,5 @@
 # git-dendrify --- transform git histories (tests)
-# Copyright (C) 2016 Ben North
+# Copyright (C) 2016, 2020 Ben North
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
