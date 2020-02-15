@@ -8,7 +8,7 @@ with open('dendrify/_version.py') as f_in:
 setup(
     name='gitdendrify',
     version=_version,
-    install_requires=['pygit2', 'docopt'],
+    install_requires=['pygit2>=0.27.1', 'docopt'],
     tests_require=['pytest', 'pytest-raisesregexp'],
     packages=find_packages(),
     entry_points={
