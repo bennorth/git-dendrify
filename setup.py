@@ -27,7 +27,7 @@ setup(
     python_requires='>=3.5',
     url='https://github.com/bennorth/git-dendrify',
     install_requires=['pygit2>=0.27.1', 'docopt'],
-    tests_require=['pytest', 'pytest-raisesregexp'],
+    tests_require=['pytest'],
     packages=find_packages(),
     entry_points={
         'console_scripts': ['git-dendrify = dendrify.cli:main']},
