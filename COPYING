@@ -1,0 +1,55 @@
+Code
+
+    dendrify/__init__.py
+    dendrify/cli.py
+    tests/test_dendrify.py
+
+is copyright as follows:
+
+    Copyright (C) 2016 Ben North
+
+and is hereby made available under the terms of the GNU General Public
+License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+The file LICENCE.txt contains a copy of this License, whose copyright is
+held by the Free Software Foundation, and which itself is freely
+distributable in unmodified form.
+
+
+------------------------------------------------------------------------
+
+Non-code content, being the documentation, notes and figures
+
+    README.md
+    notes.org
+    long-description.md
+    figures/object-graph.svg
+    figures/octopus-merge.svg
+    figures/organized-history.svg
+
+is copyright as follows:
+
+    Copyright (C) 2016, 2020 Ben North
+
+and is hereby made available under the Creative Commons Attribution
+Share-Alike licence.  A summary of this licence, and link to the full
+version, can be found here:
+
+    http://creativecommons.org/licenses/by-sa/4.0/
+
+
+------------------------------------------------------------------------
+
+Trivial content
+
+    dendrify/_version.py
+    tests/test-sdist.sh
+    COPYING
+    .gitignore
+    .travis.yml
+    requirements.txt
+    MANIFEST.in
+    setup.py
+
+is hereby placed into the public domain.
