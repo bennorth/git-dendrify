@@ -1,0 +1,17 @@
+[project]
+name = "gitdendrify"
+version = "0.2.0"
+description = "Transform git history between linear and structured forms"
+authors = [
+    {name = "Ben North", email = "ben@redfrontdoor.org"}
+]
+license = {text = "GPLv3 or later"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
