@@ -36,7 +36,6 @@ include = [
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"
-coverage = ">=7.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

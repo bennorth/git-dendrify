@@ -3,9 +3,6 @@
 Tool for converting `git` histories between hierarchical (tree-like) and
 linear structures.
 
-[![Build Status](https://travis-ci.org/bennorth/git-dendrify.svg?branch=master)](https://travis-ci.org/bennorth/git-dendrify)
-[![Coverage Status](https://coveralls.io/repos/github/bennorth/git-dendrify/badge.svg?branch=master)](https://coveralls.io/github/bennorth/git-dendrify?branch=master)
-
 
 ## Acknowledgements
 
