@@ -1,0 +1,48 @@
+# bash completion for git-dendrify, used for both "git dendrify ..."
+# and "git-dendrify ...".  Builds on git's own bash completion.  See
+# README.md for installation.
+
+_git_dendrify ()
+{
+	local i subcommand= n_args=0
+	for ((i = __git_cmd_idx + 1; i < cword; i++)); do
+		case "${words[i]}" in
+		-*)	;;
+		*)	if [ -z "$subcommand" ]; then
+				subcommand="${words[i]}"
+			else
+				n_args=$((n_args + 1))
+			fi
+			;;
+		esac
+	done
+
+	case "$subcommand,$cur" in
+	,-*)	__gitcomp "--help --version" ;;
+	,*)	__gitcomp "dendrify linearize" ;;
+	*,-*)	__gitcomp "--quiet --help" ;;
+	*)
+		case "$n_args" in
+		# New branch, which must not exist: offer nothing (not even
+		# the default of filenames).
+		0)	compopt +o default +o bashdefault 2>/dev/null ;;
+		# Base commit: any revision.
+		1)	__git_complete_refs ;;
+		# Source: an existing local branch.
+		2)	__git_complete_refs --mode=heads ;;
+		*)	compopt +o default +o bashdefault 2>/dev/null ;;
+		esac
+		;;
+	esac
+}
+
+# Also complete the standalone "git-dendrify" command.  This needs git's
+# completion functions, which might not have been loaded yet.
+if ! declare -F __git_complete >/dev/null \
+	&& declare -F _completion_loader >/dev/null
+then
+	_completion_loader git
+fi
+if declare -F __git_complete >/dev/null; then
+	__git_complete git-dendrify _git_dendrify
+fi

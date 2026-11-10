@@ -37,3 +37,12 @@ zstyle ':completion:*:descriptions' format '%B%d%b'
 This affects all completions, not just git-dendrify's.  With oh-my-zsh,
 a file such as `$ZSH_CUSTOM/80-completion-styles.zsh` is a tidy place
 for it.
+
+
+## bash
+
+With the `bash-completion` package and git's bash completion installed,
+copy `git-dendrify` to
+`~/.local/share/bash-completion/completions/git-dendrify`.  It is loaded
+automatically when first needed, so no change to `~/.bashrc` is
+required.
