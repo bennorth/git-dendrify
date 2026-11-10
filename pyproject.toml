@@ -5,12 +5,38 @@ description = "Transform git history between linear and structured forms"
 authors = [
     {name = "Ben North", email = "ben@redfrontdoor.org"}
 ]
-license = {text = "GPLv3 or later"}
-readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENCE.txt", "COPYING"]
+readme = "long-description.md"
 requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+]
 dependencies = [
+    "pygit2 (>=1.17.0,<2.0.0)",
+    "docopt (>=0.6.2,<0.7.0)",
 ]
 
+[project.urls]
+homepage = "https://github.com/bennorth/git-dendrify"
+
+[project.scripts]
+git-dendrify = "dendrify.cli:main"
+
+[tool.poetry]
+packages = [{include = "dendrify"}]
+include = [
+    {path = "README.md", format = "sdist"},
+    {path = "tests", format = "sdist"},
+]
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+coverage = ">=7.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

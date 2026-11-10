@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 
+# Check that the source distribution can be installed from, and that
+# the resulting git-dendrify script runs.
+
 set -x
-
-PYTHON_VER=$(python3 -c 'if True:
-    import sys
-    v = sys.version_info
-    print(".".join(map(str,[v.major,v.minor,v.micro])))')
-
-OPT_PYTHON=/opt/python/$PYTHON_VER/bin/python3
-if [ -x $OPT_PYTHON ]; then
-    PYTHON=$OPT_PYTHON
-else
-    PYTHON=$(which python3)
-fi
 
 D=$(mktemp -d)
 function rm_tmpdir {
@@ -20,14 +11,10 @@ function rm_tmpdir {
 }
 trap rm_tmpdir EXIT
 
-SRCDIR=$(pwd)
-
-python3 setup.py sdist -d $D \
-    && $PYTHON -m venv $D \
+poetry build --format sdist --output "$D"/dist \
+    && python3 -m venv "$D"/venv \
     && cd / \
-    && ( source $D/bin/activate \
-             && python3 -m ensurepip \
-             && pip3 install -r "$SRCDIR"/requirements.txt \
-             && pip3 install $D/gitdendrify-*.tar.gz ) \
+    && ( source "$D"/venv/bin/activate \
+             && pip install "$D"/dist/gitdendrify-*.tar.gz \
+             && git-dendrify --version ) \
     && echo Success
-
