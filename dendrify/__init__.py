@@ -16,6 +16,7 @@
 
 import time
 import sys
+from dataclasses import dataclass
 import pygit2 as git
 from enum import Enum
 
@@ -59,14 +60,39 @@ def create_base(repo, branch_name):
     return base_branch
 
 
+@dataclass(frozen=True)
+class ReportedCommit:
+    """
+    A commit just created on the destination branch, as passed to a reporter.
+    """
+    oid: git.Oid
+    message: str
+    depth: int  # Nesting depth, for indentation
+    closes_section: bool
+
+    @property
+    def short_sha1(self):
+        return str(self.oid)[:12]
+
+    @property
+    def subject(self):
+        return self.message.split('\n', 1)[0][:80]
+
+
 class ReportToStdout:
-    def __call__(self, msg):
-        sys.stdout.write(msg)
+    def __call__(self, commit):
+        sys.stdout.write(self.format(commit))
         sys.stdout.write('\n')
+
+    @staticmethod
+    def format(commit):
+        return '{sha1}{indent} * {subject}'.format(sha1=commit.short_sha1,
+                                                   indent='  ' * commit.depth,
+                                                   subject=commit.subject)
 
 
 class DoNotReport:
-    def __call__(self, msg):
+    def __call__(self, commit):
         pass
 
 
@@ -124,15 +150,12 @@ class Dendrifier:
         tip = self.repo.revparse_single(base_revision).id
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
-            def commit_to_dest(msg, parent_ids):
+            def commit_to_dest(msg, parent_ids, closes_section=False):
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
-                report_txt = ('{sha1}{indent} * {subject}'
-                              .format(indent='  ' * len(section_start_ids),
-                                      sha1=str(new_oid)[:12],
-                                      subject=msg.split('\n', 1)[0][:80]))
-                self.report(report_txt)
+                self.report(ReportedCommit(new_oid, msg, len(section_start_ids),
+                                           closes_section))
                 return new_oid
             if commit.message.startswith('<s>'):
                 section_start_ids.append(tip)
@@ -144,7 +167,7 @@ class Dendrifier:
                                      .format(id))
                 start_id = section_start_ids.pop(-1)
                 msg = commit.message[4:]
-                tip = commit_to_dest(msg, [start_id, tip])
+                tip = commit_to_dest(msg, [start_id, tip], closes_section=True)
             else:
                 tip = commit_to_dest(commit.message, [tip])
 
@@ -198,19 +221,18 @@ class Dendrifier:
         tip = self.repo.revparse_single(base_revision).id
         for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
-            def commit_to_dest(msg, parent_ids):
+            def commit_to_dest(msg, parent_ids, closes_section=False):
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
-                report_txt = ('{sha1} * {subject}'
-                              .format(sha1=str(new_oid)[:12],
-                                      subject=msg.split('\n', 1)[0][:80]))
-                self.report(report_txt)
+                # The linear form is reported without indentation.
+                self.report(ReportedCommit(new_oid, msg, 0, closes_section))
                 return new_oid
             if tp == CommitType.SectionStart:
                 tip = commit_to_dest('<s>{}'.format(commit.message), [tip])
             elif tp == CommitType.SectionEnd:
-                tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
+                tip = commit_to_dest('</s>{}'.format(commit.message), [tip],
+                                     closes_section=True)
             elif tp == CommitType.Normal:
                 tip = commit_to_dest(commit.message, [tip])
 

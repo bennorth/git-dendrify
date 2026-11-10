@@ -324,8 +324,10 @@ class TestCommandLine:
             # Don't really like this, but:
             saved_stdout = sys.stdout
             sys.stdout = captured_io = StringIO()
-            dendrify.ReportToStdout()('hello world')
-            assert captured_io.getvalue() == 'hello world\n'
+            oid = git.Oid(hex='0123456789abcdef0123456789abcdef01234567')
+            commit = dendrify.ReportedCommit(oid, 'Do thing\n\nDetails', 2, False)
+            dendrify.ReportToStdout()(commit)
+            assert captured_io.getvalue() == '0123456789ab     * Do thing\n'
         finally:
             sys.stdout = saved_stdout
 
