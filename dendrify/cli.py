@@ -14,25 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""git-dendrify
-
-Usage:
-  git-dendrify (-h | --help)
-  git-dendrify --version
-  git-dendrify dendrify [options] <new-branch> <base-commit> <linear-commit>
-  git-dendrify linearize [options] <new-branch> <base-commit> <dendrified-commit>
-
-Options:
-  -h --help    Show this help info
-  --version    Display version info and exit
-  -q --quiet   Do not print commits as they are made
-"""
+"""Command-line interface for git-dendrify"""
 
 import os
+import click
 import pygit2 as git
 import dendrify
-import docopt
 from dendrify._version import __version__
+
 
 def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=False):
     repo = git.discover_repository(dirname, False, _ceiling_dir_for_testing)
@@ -41,18 +30,47 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=F
     kwargs = {'report': dendrify.ReportToStdout()} if report_to_stdout else {}
     return dendrify.Dendrifier(repo, **kwargs)
 
-def main(_argv=None):
-    args = docopt.docopt(__doc__, argv=_argv, version='git-dendrify {}'.format(__version__))
-    dendrifier = dendrifier_for_path(os.getcwd(),
-                                     report_to_stdout=(not args['--quiet']))
-    if args['dendrify']:
-        dendrifier.dendrify(args['<new-branch>'],
-                            args['<base-commit>'],
-                            args['<linear-commit>'])
-    elif args['linearize']:
-        dendrifier.linearize(args['<new-branch>'],
-                             args['<base-commit>'],
-                             args['<dendrified-commit>'])
-    else:
-        raise RuntimeError('unknown action'
-                           ' (docopt should have handled this situation)')  # pragma nocover
+
+def _dendrifier_for_cwd(quiet):
+    return dendrifier_for_path(os.getcwd(), report_to_stdout=(not quiet))
+
+
+_quiet_option = click.option('-q', '--quiet', is_flag=True,
+                             help='Do not print commits as they are made.')
+
+
+@click.group(context_settings={'help_option_names': ['-h', '--help']})
+@click.version_option(__version__, prog_name='git-dendrify',
+                      message='%(prog)s %(version)s')
+def main():
+    """Transform git history between linear and structured forms."""
+
+
+@main.command('dendrify')
+@_quiet_option
+@click.argument('new_branch', metavar='NEW-BRANCH')
+@click.argument('base_commit', metavar='BASE-COMMIT')
+@click.argument('linear_branch', metavar='LINEAR-BRANCH')
+def dendrify_command(quiet, new_branch, base_commit, linear_branch):
+    """Convert a linear history into a structured one.
+
+    Create NEW-BRANCH, which must not already exist, holding a structured
+    version of the commits from BASE-COMMIT (exclusive) to the tip of the
+    existing branch LINEAR-BRANCH.
+    """
+    _dendrifier_for_cwd(quiet).dendrify(new_branch, base_commit, linear_branch)
+
+
+@main.command('linearize')
+@_quiet_option
+@click.argument('new_branch', metavar='NEW-BRANCH')
+@click.argument('base_commit', metavar='BASE-COMMIT')
+@click.argument('dendrified_branch', metavar='DENDRIFIED-BRANCH')
+def linearize_command(quiet, new_branch, base_commit, dendrified_branch):
+    """Convert a structured history into a linear one.
+
+    Create NEW-BRANCH, which must not already exist, holding a linear
+    version of the commits from BASE-COMMIT (exclusive) to the tip of the
+    existing branch DENDRIFIED-BRANCH.
+    """
+    _dendrifier_for_cwd(quiet).linearize(new_branch, base_commit, dendrified_branch)

@@ -20,8 +20,8 @@ import time
 import os
 from io import StringIO
 import sys
-import docopt
 from contextlib import contextmanager
+from click.testing import CliRunner
 
 import dendrify
 import dendrify.cli
@@ -35,6 +35,10 @@ def temporary_cwd_within_repo(repo):
         yield
     finally:
         os.chdir(saved_cwd)
+
+
+def run_cli(args):
+    return CliRunner().invoke(dendrify.cli.main, args, catch_exceptions=False)
 
 
 @pytest.fixture
@@ -216,7 +220,8 @@ class TestTransformations:
             empty_dendrifier.dendrify(*args)
         elif how == 'via-cli':
             with temporary_cwd_within_repo(repo):
-                dendrify.cli.main(_argv=['dendrify'] + args)
+                result = run_cli(['dendrify'] + args)
+                assert result.exit_code == 0, result.output
         lin_commit_oids = empty_dendrifier.linear_ancestry('develop', 'linear')
         exp_links = [(9, 8), (8, 7), (8, 0), (7, 6), (7, 4), (6, 5),
                      (5, 4), (4, 3), (4, 1), (3, 2), (2, 1), (1, 0), (0, -1)]
@@ -255,7 +260,8 @@ class TestTransformations:
             empty_dendrifier.linearize(*args)
         elif how == 'via-cli':
             with temporary_cwd_within_repo(repo):
-                dendrify.cli.main(_argv=['linearize'] + args)
+                result = run_cli(['linearize'] + args)
+                assert result.exit_code == 0, result.output
         lin_commit_oids_1 = empty_dendrifier.linear_ancestry('develop', 'linear-1')
         orig_msgs = [repo[oid].message for oid in lin_commit_oids]
         rtrp_msgs = [repo[oid].message for oid in lin_commit_oids_1]
@@ -333,5 +339,6 @@ class TestCommandLine:
         assert dendrifier.repo.path == empty_repo.path
 
     def test_bad_command(self):
-        with pytest.raises(docopt.DocoptExit, match='Usage:'):
-            dendrify.cli.main(_argv=['hello', 'world'])
+        result = run_cli(['hello', 'world'])
+        assert result.exit_code == 2
+        assert 'Usage:' in result.output
