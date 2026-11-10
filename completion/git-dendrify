@@ -23,6 +23,7 @@ _git_dendrify ()
 	local i subcommand= n_args=0
 	for ((i = __git_cmd_idx + 1; i < cword; i++)); do
 		case "${words[i]}" in
+		--color)	i=$((i + 1)) ;;  # Skip its value
 		-*)	;;
 		*)	if [ -z "$subcommand" ]; then
 				subcommand="${words[i]}"
@@ -36,7 +37,9 @@ _git_dendrify ()
 	case "$subcommand,$cur" in
 	,-*)	__gitcomp "--help --version" ;;
 	,*)	__gitcomp "dendrify linearize" ;;
-	*,-*)	__gitcomp "--quiet --help" ;;
+	*,--color=*)
+		__gitcomp "auto always never" "" "${cur##--color=}" ;;
+	*,-*)	__gitcomp "--quiet --color= --help" ;;
 	*)
 		case "$n_args" in
 		# New branch, which must not exist: offer nothing (not even

@@ -22,6 +22,7 @@ from io import StringIO
 import sys
 import re
 from contextlib import contextmanager
+import click
 from click.testing import CliRunner
 
 import dendrify
@@ -448,3 +449,27 @@ class TestCommandLine:
             re.escape(' * ') + bold_bright_blue('</s>Finish work 6'),
             re.escape(' * ') + bold_bright_blue('</s>Finish work 7'),
         ])
+
+    @pytest.mark.parametrize(
+        'color_args, output_is_tty, exp_colour',
+        [([], False, False),
+         ([], True, True),
+         (['--color=auto'], False, False),
+         (['--color=auto'], True, True),
+         (['--color=always'], False, True),
+         (['--color', 'always'], False, True),
+         (['--color=never'], True, False)])
+    def test_color_option(self, empty_dendrifier, color_args, output_is_tty, exp_colour):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '.'])
+        result = run_cli(['dendrify'] + color_args + ['dendrified', 'develop', 'linear'],
+                         repo, color=output_is_tty)
+        assert result.exit_code == 0
+        assert ('\x1b[' in result.output) == exp_colour
+        assert click.unstyle(result.output).endswith(' * Work item 1\n')
+
+    def test_bad_color_option(self, empty_dendrifier):
+        result = run_cli(['dendrify', '--color=sometimes', 'a', 'b', 'c'],
+                         empty_dendrifier.repo)
+        assert result.exit_code == 2
+        assert "'sometimes' is not one of 'auto', 'always', 'never'" in result.output

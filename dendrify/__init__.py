@@ -84,11 +84,15 @@ class ReportToStdout:
     Print each commit's short SHA1 (in green) and subject (in bold bright
     blue if the commit closes a section), indented by nesting depth.
 
-    Colour is only included if stdout is a terminal (as decided by
-    ``click.echo()``).
+    By default (``color=None``), colour is only included if stdout is a
+    terminal, as decided by ``click.echo()``.  Pass ``color=True`` or
+    ``color=False`` to always or never include it.
     """
+    def __init__(self, color=None):
+        self.color = color
+
     def __call__(self, commit):
-        click.echo(self.format(commit))
+        click.echo(self.format(commit), color=self.color)
 
     @staticmethod
     def format(commit):
