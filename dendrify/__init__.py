@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-import sys
 from dataclasses import dataclass
+import click
 import pygit2 as git
 from enum import Enum
 
@@ -80,15 +80,25 @@ class ReportedCommit:
 
 
 class ReportToStdout:
+    """
+    Print each commit's short SHA1 (in green) and subject (in bold bright
+    blue if the commit closes a section), indented by nesting depth.
+
+    Colour is only included if stdout is a terminal (as decided by
+    ``click.echo()``).
+    """
     def __call__(self, commit):
-        sys.stdout.write(self.format(commit))
-        sys.stdout.write('\n')
+        click.echo(self.format(commit))
 
     @staticmethod
     def format(commit):
-        return '{sha1}{indent} * {subject}'.format(sha1=commit.short_sha1,
+        sha1 = click.style(commit.short_sha1, fg='green')
+        subject = (click.style(commit.subject, fg='bright_blue', bold=True)
+                   if commit.closes_section
+                   else commit.subject)
+        return '{sha1}{indent} * {subject}'.format(sha1=sha1,
                                                    indent='  ' * commit.depth,
-                                                   subject=commit.subject)
+                                                   subject=subject)
 
 
 class DoNotReport:

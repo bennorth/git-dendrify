@@ -38,12 +38,12 @@ def temporary_cwd_within_repo(repo):
         os.chdir(saved_cwd)
 
 
-def run_cli(args, repo=None):
+def run_cli(args, repo=None, **kwargs):
     runner = CliRunner()
     if repo is None:
-        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False, **kwargs)
     with temporary_cwd_within_repo(repo):
-        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False, **kwargs)
 
 
 @pytest.fixture
@@ -413,3 +413,38 @@ class TestCommandLine:
             'SHA1 * </s>Finish work 8',
             'SHA1 * Work item 9',
         ]
+
+    def test_progress_report_colour(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '[', '.', '[', '.', ']', ']'])
+
+        GREEN_SHA1 = re.escape('\x1b[32m') + '[0-9a-f]{12}' + re.escape('\x1b[0m')
+
+        def bold_bright_blue(text):
+            return re.escape('\x1b[94m\x1b[1m' + text + '\x1b[0m')
+
+        def assert_report_matches(args, exp_patterns):
+            result = run_cli(args, repo, color=True)
+            assert result.exit_code == 0
+            lines = result.output.splitlines()
+            assert len(lines) == len(exp_patterns)
+            for line, exp_pattern in zip(lines, exp_patterns):
+                assert re.fullmatch(GREEN_SHA1 + exp_pattern, line), line
+
+        assert_report_matches(['dendrify', 'dendrified', 'develop', 'linear'], [
+            re.escape('   * Start work 2'),
+            re.escape('   * Work item 3'),
+            re.escape('     * Start work 4'),
+            re.escape('     * Work item 5'),
+            re.escape('   * ') + bold_bright_blue('Finish work 6'),
+            re.escape(' * ') + bold_bright_blue('Finish work 7'),
+        ])
+
+        assert_report_matches(['linearize', 'linear-1', 'develop', 'dendrified'], [
+            re.escape(' * <s>Start work 2'),
+            re.escape(' * Work item 3'),
+            re.escape(' * <s>Start work 4'),
+            re.escape(' * Work item 5'),
+            re.escape(' * ') + bold_bright_blue('</s>Finish work 6'),
+            re.escape(' * ') + bold_bright_blue('</s>Finish work 7'),
+        ])
