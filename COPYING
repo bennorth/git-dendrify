@@ -47,6 +47,5 @@ Trivial content
     tests/test-sdist.sh
     COPYING
     .gitignore
-    .travis.yml
 
 is hereby placed into the public domain.
