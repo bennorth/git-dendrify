@@ -17,6 +17,7 @@
 """Command-line interface for git-dendrify"""
 
 import os
+from contextlib import contextmanager
 import click
 import pygit2 as git
 import dendrify
@@ -33,6 +34,22 @@ def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=F
 
 def _dendrifier_for_cwd(quiet):
     return dendrifier_for_path(os.getcwd(), report_to_stdout=(not quiet))
+
+
+@contextmanager
+def _errors_reported_cleanly():
+    """
+    Report errors arising from the user's input (bad branch names,
+    histories of the wrong shape, etc.) as plain messages rather than
+    tracebacks.
+    """
+    try:
+        yield
+    except ValueError as e:
+        raise click.ClickException(str(e))
+    except KeyError as e:
+        # pygit2 raises KeyError for a revision which cannot be resolved.
+        raise click.ClickException('not found: {}'.format(e.args[0]))
 
 
 _quiet_option = click.option('-q', '--quiet', is_flag=True,
@@ -58,7 +75,8 @@ def dendrify_command(quiet, new_branch, base_commit, linear_branch):
     version of the commits from BASE-COMMIT (exclusive) to the tip of the
     existing branch LINEAR-BRANCH.
     """
-    _dendrifier_for_cwd(quiet).dendrify(new_branch, base_commit, linear_branch)
+    with _errors_reported_cleanly():
+        _dendrifier_for_cwd(quiet).dendrify(new_branch, base_commit, linear_branch)
 
 
 @main.command('linearize')
@@ -73,4 +91,5 @@ def linearize_command(quiet, new_branch, base_commit, dendrified_branch):
     version of the commits from BASE-COMMIT (exclusive) to the tip of the
     existing branch DENDRIFIED-BRANCH.
     """
-    _dendrifier_for_cwd(quiet).linearize(new_branch, base_commit, dendrified_branch)
+    with _errors_reported_cleanly():
+        _dendrifier_for_cwd(quiet).linearize(new_branch, base_commit, dendrified_branch)

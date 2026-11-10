@@ -37,8 +37,12 @@ def temporary_cwd_within_repo(repo):
         os.chdir(saved_cwd)
 
 
-def run_cli(args):
-    return CliRunner().invoke(dendrify.cli.main, args, catch_exceptions=False)
+def run_cli(args, repo=None):
+    runner = CliRunner()
+    if repo is None:
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
+    with temporary_cwd_within_repo(repo):
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
 
 
 @pytest.fixture
@@ -342,3 +346,35 @@ class TestCommandLine:
         result = run_cli(['hello', 'world'])
         assert result.exit_code == 2
         assert 'Usage:' in result.output
+
+    def test_version(self):
+        result = run_cli(['--version'])
+        assert result.exit_code == 0
+        assert result.output == 'git-dendrify {}\n'.format(dendrify.cli.__version__)
+
+    @pytest.mark.parametrize('quiet', [False, True])
+    def test_quiet(self, empty_dendrifier, quiet):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '[', '.', ']'])
+        quiet_args = ['--quiet'] if quiet else []
+        result = run_cli(['dendrify'] + quiet_args + ['dendrified', 'develop', 'linear'],
+                         repo)
+        assert result.exit_code == 0
+        assert (result.output == '') == quiet
+
+    @pytest.mark.parametrize(
+        'args, exp_msg',
+        [(['dendrify', 'linear', 'test-base', 'linear'],
+          'destination branch "linear" exists'),
+         (['dendrify', 'dendrified', 'test-base', 'no-such-branch'],
+          'source branch "no-such-branch" does not exist'),
+         (['dendrify', 'dendrified', 'no-such-revision', 'linear'],
+          'not found: no-such-revision'),
+         (['linearize', 'linear-1', 'no-such-revision', 'linear'],
+          'not found: no-such-revision')])
+    def test_error_reported_cleanly(self, empty_dendrifier, args, exp_msg):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.'])
+        result = run_cli(args, repo)
+        assert result.exit_code == 1
+        assert result.output == 'Error: {}\n'.format(exp_msg)
