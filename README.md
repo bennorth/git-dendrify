@@ -321,7 +321,7 @@ called <code><i>output-tree-like-branch</i></code> starting from the same
 to deduce the desired structure, and are stripped from the resulting
 commit messages in <code><i>output-tree-like-branch</i></code>.
 
-#### Convert linear to hierarchical: 'linearize'
+#### Convert hierarchical to linear: 'linearize'
 
 <pre>git dendrify linearize <i>output-linear-branch base source-tree-like-branch</i></pre>
 
