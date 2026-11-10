@@ -20,6 +20,7 @@ import time
 import os
 from io import StringIO
 import sys
+import re
 from contextlib import contextmanager
 from click.testing import CliRunner
 
@@ -378,3 +379,35 @@ class TestCommandLine:
         result = run_cli(args, repo)
         assert result.exit_code == 1
         assert result.output == 'Error: {}\n'.format(exp_msg)
+
+    def test_progress_report(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '.', '[', '.', '[', '.', ']', ']', '.'])
+
+        def report_lines(args):
+            result = run_cli(args, repo)
+            assert result.exit_code == 0
+            return re.sub('^[0-9a-f]{12} ', 'SHA1 ', result.output,
+                          flags=re.MULTILINE).splitlines()
+
+        assert report_lines(['dendrify', 'dendrified', 'develop', 'linear']) == [
+            'SHA1 * Work item 2',
+            'SHA1   * Start work 3',
+            'SHA1   * Work item 4',
+            'SHA1     * Start work 5',
+            'SHA1     * Work item 6',
+            'SHA1   * Finish work 7',
+            'SHA1 * Finish work 8',
+            'SHA1 * Work item 9',
+        ]
+
+        assert report_lines(['linearize', 'linear-1', 'develop', 'dendrified']) == [
+            'SHA1 * Work item 2',
+            'SHA1 * <s>Start work 3',
+            'SHA1 * Work item 4',
+            'SHA1 * <s>Start work 5',
+            'SHA1 * Work item 6',
+            'SHA1 * </s>Finish work 7',
+            'SHA1 * </s>Finish work 8',
+            'SHA1 * Work item 9',
+        ]
