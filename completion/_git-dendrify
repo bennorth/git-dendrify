@@ -1,0 +1,55 @@
+#compdef git-dendrify
+#description transform history between linear and structured forms
+
+# zsh completion for git-dendrify, used for both "git dendrify ..."
+# and "git-dendrify ...".  See README.md for installation.
+
+# Local branches, for arguments which must name an existing branch.
+(( $+functions[_git-dendrify_branches] )) ||
+_git-dendrify_branches() {
+  local -a expl branches
+  branches=(${(f)"$(_call_program branches git for-each-ref --format='%\(refname:short\)' refs/heads 2>/dev/null)"})
+  _wanted branches expl 'branch' compadd -a branches
+}
+
+# Any revision: local branches, then tags and remote-tracking branches.
+(( $+functions[_git-dendrify_revisions] )) ||
+_git-dendrify_revisions() {
+  local -a expl others
+  others=(${(f)"$(_call_program refs git for-each-ref --format='%\(refname:short\)' refs/tags refs/remotes 2>/dev/null)"})
+  _alternative \
+    'branches:: _git-dendrify_branches' \
+    'refs:: _wanted refs expl "tag or remote branch" compadd -a others'
+}
+
+_git-dendrify() {
+  local curcontext=$curcontext state line ret=1
+  local -A opt_args
+
+  _arguments -C \
+    '(- :)'{-h,--help}'[show help and exit]' \
+    '(- :)--version[show version and exit]' \
+    '1:command:((dendrify\:"convert a linear history into a structured one" linearize\:"convert a structured history into a linear one"))' \
+    '*:: :->args' && ret=0
+
+  if [[ $state == args ]]; then
+    curcontext=${curcontext%:*:*}:git-dendrify-$words[1]:
+    local src
+    case $words[1] in
+      (dendrify) src='linear branch' ;;
+      (linearize) src='dendrified branch' ;;
+      (*) _message "unknown command: $words[1]"; return 1 ;;
+    esac
+    # Nothing is offered for the new branch, only a hint, which zsh shows
+    # only if a 'format' is set for descriptions; see README.md.
+    _arguments \
+      '(- :)'{-h,--help}'[show help and exit]' \
+      '(-q --quiet)'{-q,--quiet}'[do not print commits as they are made]' \
+      '1:new branch (must not exist): ' \
+      '2:base commit:_git-dendrify_revisions' \
+      "3:$src:_git-dendrify_branches" && ret=0
+  fi
+  return ret
+}
+
+_git-dendrify "$@"

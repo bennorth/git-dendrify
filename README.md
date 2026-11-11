@@ -332,6 +332,12 @@ converts the hierarchical history starting at (but excluding)
 <code><i>base</i></code>.  The magic `<s>` and `</s>` strings are
 inserted to store the structure.
 
+#### Shell completion
+
+Completion for zsh and bash is provided in the `completion`
+directory; see [its README](completion/README.md) for how to install
+it.
+
 
 ### Implementation note
 

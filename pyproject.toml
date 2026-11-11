@@ -32,6 +32,7 @@ packages = [{include = "dendrify"}]
 include = [
     {path = "README.md", format = "sdist"},
     {path = "tests", format = "sdist"},
+    {path = "completion", format = "sdist"},
 ]
 
 [tool.poetry.group.dev.dependencies]
