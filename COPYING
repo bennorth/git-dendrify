@@ -3,10 +3,12 @@ Code
     dendrify/__init__.py
     dendrify/cli.py
     tests/test_dendrify.py
+    completion/_git-dendrify
+    completion/git-dendrify
 
 is copyright as follows:
 
-    Copyright (C) 2016 Ben North
+    Copyright (C) 2016, 2026 Ben North
 
 and is hereby made available under the terms of the GNU General Public
 License as published by the Free Software Foundation, either version 3
@@ -22,6 +24,7 @@ distributable in unmodified form.
 Non-code content, being the documentation, notes and figures
 
     README.md
+    completion/README.md
     notes.org
     long-description.md
     figures/object-graph.svg
@@ -47,5 +50,7 @@ Trivial content
     tests/test-sdist.sh
     COPYING
     .gitignore
+    pyproject.toml
+    poetry.lock
 
 is hereby placed into the public domain.
