@@ -17,6 +17,7 @@
 import time
 import sys
 from dataclasses import dataclass
+from typing import Optional
 import click
 import pygit2 as git
 from enum import Enum
@@ -65,8 +66,9 @@ def create_base(repo, branch_name):
 class ReportedCommit:
     """
     A commit just created on the destination branch, as passed to a reporter.
+    In a dry run, no commit is created, and ``oid`` is ``None``.
     """
-    oid: git.Oid
+    oid: Optional[git.Oid]
     message: str
     kind: CommitType
     # Depth of the section which the commit opens, closes, or is within;
@@ -79,7 +81,7 @@ class ReportedCommit:
 
     @property
     def short_sha1(self):
-        return str(self.oid)[:12]
+        return None if self.oid is None else str(self.oid)[:12]
 
     @property
     def subject(self):
@@ -107,6 +109,8 @@ class ReportToStdout:
 
     If stdout's encoding cannot represent the box-drawing characters,
     the structure is drawn with "/", "|" and "\\" instead.
+
+    For a commit with no SHA1 (in a dry run), the SHA1 column is omitted.
     """
     BOX_DRAWING = {'start': '┌ ', 'within': '│ ', 'end': '└ '}
     ASCII = {'start': '/ ', 'within': '| ', 'end': '\\ '}
@@ -141,13 +145,15 @@ class ReportToStdout:
         return drawing['within'] * (depth - 1) + marker
 
     def format(self, commit):
-        sha1 = click.style(commit.short_sha1, fg='green')
+        short_sha1 = commit.short_sha1
+        sha1 = ('' if short_sha1 is None
+                else click.style(short_sha1, fg='green') + ' ')
         subject = (click.style(commit.subject, fg='bright_blue', bold=True)
                    if commit.closes_section
                    else commit.subject)
-        return '{sha1} {structure}{subject}'.format(sha1=sha1,
-                                                    structure=self.structure(commit),
-                                                    subject=subject)
+        return '{sha1}{structure}{subject}'.format(sha1=sha1,
+                                                   structure=self.structure(commit),
+                                                   subject=subject)
 
 
 class DoNotReport:
@@ -156,9 +162,36 @@ class DoNotReport:
 
 
 class Dendrifier:
+    """
+    Transform histories in a repository.  For ``dendrify()`` and
+    ``linearize()``, passing ``None`` as the destination branch name
+    performs a dry run: the commits which would be made are reported, but
+    no commits or branch are created, and each reported commit's ``oid``
+    is ``None``.
+    """
     def __init__(self, repository_path, report=DoNotReport()):
         self.repo = git.Repository(repository_path)
         self.report = report
+
+    def _create_commit(self, dry_run, source_commit, msg, parent_ids):
+        """
+        Create a commit with the author, committer, and tree of
+        ``source_commit``, but with the given message and parents, and
+        return its oid.  In a dry run, create nothing and return ``None``.
+        """
+        if dry_run:
+            return None
+        return self.repo.create_commit(None,
+                                       source_commit.author, source_commit.committer,
+                                       msg, source_commit.tree_id, parent_ids)
+
+    def _verify_destination(self, branch_name):
+        if branch_name is not None:
+            self._verify_branch_existence('destination', branch_name, False)
+
+    def _create_destination(self, branch_name, tip):
+        if branch_name is not None:
+            self.repo.create_branch(branch_name, self.repo[tip])
 
     @staticmethod
     def plain_message_from_tagged(msg):
@@ -202,17 +235,16 @@ class Dendrifier:
                                      'exists' if exists else 'does not exist'))
 
     def dendrify(self, dendrified_branch_name, base_revision, linear_branch_name):
-        self._verify_branch_existence('destination', dendrified_branch_name, False)
+        self._verify_destination(dendrified_branch_name)
         self._verify_branch_existence('source', linear_branch_name, True)
+        dry_run = (dendrified_branch_name is None)
 
         section_start_ids = []
         tip = self.repo.revparse_single(base_revision).id
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids, kind, depth):
-                new_oid = self.repo.create_commit(None,
-                                                  commit.author, commit.committer,
-                                                  msg, commit.tree_id, parent_ids)
+                new_oid = self._create_commit(dry_run, commit, msg, parent_ids)
                 self.report(ReportedCommit(new_oid, msg, kind, depth))
                 return new_oid
             if commit.message.startswith('<s>'):
@@ -233,7 +265,7 @@ class Dendrifier:
                 tip = commit_to_dest(commit.message, [tip],
                                      CommitType.Normal, len(section_start_ids))
 
-        self.repo.create_branch(dendrified_branch_name, self.repo[tip])
+        self._create_destination(dendrified_branch_name, tip)
 
     def flattened_ancestry(self, base_revision, branch_name):
         """
@@ -277,17 +309,16 @@ class Dendrifier:
         return list(reversed(elts))
 
     def linearize(self, linear_branch_name, base_revision, dendrified_branch_name):
-        self._verify_branch_existence('destination', linear_branch_name, False)
+        self._verify_destination(linear_branch_name)
         self._verify_branch_existence('source', dendrified_branch_name, True)
+        dry_run = (linear_branch_name is None)
 
         tip = self.repo.revparse_single(base_revision).id
         depth = 0
         for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
-                new_oid = self.repo.create_commit(None,
-                                                  commit.author, commit.committer,
-                                                  msg, commit.tree_id, parent_ids)
+                new_oid = self._create_commit(dry_run, commit, msg, parent_ids)
                 self.report(ReportedCommit(new_oid, msg, tp, depth))
                 return new_oid
             if tp == CommitType.SectionStart:
@@ -299,4 +330,4 @@ class Dendrifier:
             elif tp == CommitType.Normal:
                 tip = commit_to_dest(commit.message, [tip])
 
-        self.repo.create_branch(linear_branch_name, self.repo[tip])
+        self._create_destination(linear_branch_name, tip)

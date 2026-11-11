@@ -25,10 +25,11 @@ picked up.
 ### Hints and headings
 
 When completing the new branch name, nothing is offered (the branch
-must not exist yet), but a hint "new branch (must not exist)" is
-available.  zsh only displays such hints, and the headings above each
-group of completions, if a `format` is set for completion descriptions,
-for example:
+must not exist yet, or be "-" to only show the result), but a hint
+"new branch (must not exist; - to only show result)" is available.
+zsh only displays such hints, and the headings above each group of
+completions, if a `format` is set for completion descriptions, for
+example:
 
 ```zsh
 zstyle ':completion:*:descriptions' format '%B%d%b'
