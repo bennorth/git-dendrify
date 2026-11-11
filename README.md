@@ -332,6 +332,16 @@ converts the hierarchical history starting at (but excluding)
 <code><i>base</i></code>.  The magic `<s>` and `</s>` strings are
 inserted to store the structure.
 
+#### Previewing the result
+
+Giving `-` as the output branch name, for example
+
+<pre>git dendrify dendrify - <i>base source-linear-branch</i></pre>
+
+shows the commits which would be made, with their structure, but
+creates no commits and no branch.  Because no commits exist, their SHA1s
+are not shown.  This works for both `dendrify` and `linearize`.
+
 #### Shell completion
 
 Completion for zsh and bash is provided in the `completion`
