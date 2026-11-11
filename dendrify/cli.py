@@ -42,6 +42,15 @@ def _dendrifier_for_cwd(quiet, color):
                                color=_color_f_when[color])
 
 
+# Given as the new branch name, this means "only show the commits which
+# would be made", without creating any commits or branch.
+DRY_RUN_BRANCH_NAME = '-'
+
+
+def _destination_branch(new_branch):
+    return None if new_branch == DRY_RUN_BRANCH_NAME else new_branch
+
+
 @contextmanager
 def _errors_reported_cleanly():
     """
@@ -86,9 +95,13 @@ def dendrify_command(quiet, color, new_branch, base_commit, linear_branch):
     Create NEW-BRANCH, which must not already exist, holding a structured
     version of the commits from BASE-COMMIT (exclusive) to the tip of the
     existing branch LINEAR-BRANCH.
+
+    If NEW-BRANCH is "-", only show the commits which would be made,
+    without creating them or any branch.
     """
     with _errors_reported_cleanly():
-        _dendrifier_for_cwd(quiet, color).dendrify(new_branch, base_commit, linear_branch)
+        _dendrifier_for_cwd(quiet, color).dendrify(_destination_branch(new_branch),
+                                                   base_commit, linear_branch)
 
 
 @main.command('linearize')
@@ -103,7 +116,10 @@ def linearize_command(quiet, color, new_branch, base_commit, dendrified_branch):
     Create NEW-BRANCH, which must not already exist, holding a linear
     version of the commits from BASE-COMMIT (exclusive) to the tip of the
     existing branch DENDRIFIED-BRANCH.
+
+    If NEW-BRANCH is "-", only show the commits which would be made,
+    without creating them or any branch.
     """
     with _errors_reported_cleanly():
-        _dendrifier_for_cwd(quiet, color).linearize(new_branch, base_commit,
-                                                    dendrified_branch)
+        _dendrifier_for_cwd(quiet, color).linearize(_destination_branch(new_branch),
+                                                    base_commit, dendrified_branch)

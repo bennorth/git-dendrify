@@ -457,6 +457,44 @@ class TestCommandLine:
             'SHA1   Work item 9',
         ]
 
+    def test_dry_run(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '.', '[', '.', '[', '.', ']', ']', '.'])
+        empty_dendrifier.dendrify('dendrified', 'develop', 'linear')
+
+        def assert_dry_run_output(args, exp_lines):
+            refs_before = sorted(repo.listall_references())
+            objects_before = set(repo.odb)
+            result = run_cli(args, repo, color=True)
+            assert result.exit_code == 0, result.output
+            # No SHA1 column, so no green either:
+            assert '\x1b[32m' not in result.output
+            assert click.unstyle(result.output).splitlines() == exp_lines
+            assert sorted(repo.listall_references()) == refs_before
+            assert set(repo.odb) == objects_before
+
+        assert_dry_run_output(['dendrify', '-', 'develop', 'linear'], [
+            '  Work item 2',
+            '┌ Start work 3',
+            '│ Work item 4',
+            '│ ┌ Start work 5',
+            '│ │ Work item 6',
+            '│ └ Finish work 7',
+            '└ Finish work 8',
+            '  Work item 9',
+        ])
+
+        assert_dry_run_output(['linearize', '-', 'develop', 'dendrified'], [
+            '  Work item 2',
+            '┌ <s>Start work 3',
+            '│ Work item 4',
+            '│ ┌ <s>Start work 5',
+            '│ │ Work item 6',
+            '│ └ </s>Finish work 7',
+            '└ </s>Finish work 8',
+            '  Work item 9',
+        ])
+
     def test_dry_run_directly(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.develop', '[', '.', ']'])
@@ -468,6 +506,13 @@ class TestCommandLine:
                                                  'Finish work 3']
         assert all(c.oid is None and c.short_sha1 is None for c in reported)
         assert sorted(repo.listall_references()) == refs_before
+
+    def test_dry_run_reports_bad_structure(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', ']'])
+        result = run_cli(['dendrify', '-', 'develop', 'linear'], repo)
+        assert result.exit_code == 1
+        assert 'unexpected section-end' in result.output
 
     def test_progress_report_colour(self, empty_dendrifier):
         repo = empty_dendrifier.repo
