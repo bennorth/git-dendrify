@@ -457,6 +457,18 @@ class TestCommandLine:
             'SHA1   Work item 9',
         ]
 
+    def test_dry_run_directly(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '[', '.', ']'])
+        reported = []
+        empty_dendrifier.report = reported.append
+        refs_before = sorted(repo.listall_references())
+        empty_dendrifier.dendrify(None, 'develop', 'linear')
+        assert [c.subject for c in reported] == ['Start work 1', 'Work item 2',
+                                                 'Finish work 3']
+        assert all(c.oid is None and c.short_sha1 is None for c in reported)
+        assert sorted(repo.listall_references()) == refs_before
+
     def test_progress_report_colour(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         populate_repo(repo, ['.', '.develop', '[', '.', '[', '.', ']', ']'])
