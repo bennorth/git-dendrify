@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import sys
 from dataclasses import dataclass
 import click
 import pygit2 as git
@@ -103,29 +104,49 @@ class ReportToStdout:
     By default (``color=None``), colour is only included if stdout is a
     terminal, as decided by ``click.echo()``.  Pass ``color=True`` or
     ``color=False`` to always or never include it.
+
+    If stdout's encoding cannot represent the box-drawing characters,
+    the structure is drawn with "/", "|" and "\\" instead.
     """
+    BOX_DRAWING = {'start': '┌ ', 'within': '│ ', 'end': '└ '}
+    ASCII = {'start': '/ ', 'within': '| ', 'end': '\\ '}
+
     def __init__(self, color=None):
         self.color = color
+        self._drawing = None  # Chosen on first use, to suit stdout
 
     def __call__(self, commit):
+        if self._drawing is None:
+            self._drawing = self.drawing_for(sys.stdout)
         click.echo(self.format(commit), color=self.color)
 
-    @staticmethod
-    def structure(commit):
+    @classmethod
+    def drawing_for(cls, stream):
+        encoding = getattr(stream, 'encoding', None)
+        if encoding is None:
+            # For example, io.StringIO, which accepts any text.
+            return cls.BOX_DRAWING
+        try:
+            ''.join(cls.BOX_DRAWING.values()).encode(encoding)
+            return cls.BOX_DRAWING
+        except (UnicodeEncodeError, LookupError):
+            return cls.ASCII
+
+    def structure(self, commit):
+        drawing = self._drawing or self.BOX_DRAWING
         depth = commit.depth
         if commit.kind == CommitType.Normal:
-            return '│ ' * depth if depth > 0 else '  '
-        marker = '┌ ' if commit.kind == CommitType.SectionStart else '└ '
-        return '│ ' * (depth - 1) + marker
+            return drawing['within'] * depth if depth > 0 else '  '
+        marker = drawing['start' if commit.kind == CommitType.SectionStart else 'end']
+        return drawing['within'] * (depth - 1) + marker
 
-    @classmethod
-    def format(cls, commit):
+    def format(self, commit):
         sha1 = click.style(commit.short_sha1, fg='green')
         subject = (click.style(commit.subject, fg='bright_blue', bold=True)
                    if commit.closes_section
                    else commit.subject)
         return '{sha1} {structure}{subject}'.format(sha1=sha1,
-                                                    structure=cls.structure(commit),
+                                                    structure=self.structure(commit),
                                                     subject=subject)
 
 

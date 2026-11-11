@@ -18,7 +18,7 @@ import pytest
 import pygit2 as git
 import time
 import os
-from io import StringIO
+from io import StringIO, BytesIO, TextIOWrapper
 import sys
 import re
 from contextlib import contextmanager
@@ -332,6 +332,41 @@ class TestCommandLine:
             assert captured_io.getvalue() == '0123456789ab │ │ Do thing\n'
         finally:
             sys.stdout = saved_stdout
+
+    @pytest.mark.parametrize(
+        'encoding, exp_ascii',
+        [('utf-8', False), ('cp437', False),
+         ('ascii', True), ('latin-1', True), ('cp1252', True),
+         ('no-such-encoding', True)])
+    def test_drawing_for_encoding(self, encoding, exp_ascii):
+        class Stream:
+            pass
+        stream = Stream()
+        stream.encoding = encoding
+        exp_drawing = (dendrify.ReportToStdout.ASCII if exp_ascii
+                       else dendrify.ReportToStdout.BOX_DRAWING)
+        assert dendrify.ReportToStdout.drawing_for(stream) == exp_drawing
+
+    def test_reporting_ascii_fallback(self):
+        oid = git.Oid(hex='0123456789abcdef0123456789abcdef01234567')
+        CT = dendrify.CommitType
+        commits = [dendrify.ReportedCommit(oid, msg, kind, 1)
+                   for msg, kind in [('Start', CT.SectionStart),
+                                     ('Work', CT.Normal),
+                                     ('Finish', CT.SectionEnd)]]
+        saved_stdout = sys.stdout
+        try:
+            sys.stdout = TextIOWrapper(BytesIO(), encoding='latin-1')
+            report = dendrify.ReportToStdout()
+            for commit in commits:
+                report(commit)
+            sys.stdout.flush()
+            output = sys.stdout.buffer.getvalue().decode('latin-1')
+        finally:
+            sys.stdout = saved_stdout
+        assert output.splitlines() == ['0123456789ab / Start',
+                                       '0123456789ab | Work',
+                                       '0123456789ab \\ Finish']
 
     def test_no_repo_found(self, tmpdir):
         subdir = os.path.join(tmpdir.strpath, 'not-a-git-repo')
