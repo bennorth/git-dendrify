@@ -68,11 +68,11 @@ def populate_repo(repo, commit_descriptors, branch_name='linear'):
         parent = repo[repo.lookup_branch(branch_name).target]
         def commit(msg, tree_oid):
             repo.create_commit(ref_name, sig, sig,
-                               msg, tree_oid, [parent.oid.hex])
+                               msg, tree_oid, [str(parent.id)])
         if cd[0] == '[':
-            commit('<s>Start work {}'.format(idx), parent.tree.oid)
+            commit('<s>Start work {}'.format(idx), parent.tree.id)
         elif cd[0] == ']':
-            commit('</s>Finish work {}'.format(idx), parent.tree.oid)
+            commit('</s>Finish work {}'.format(idx), parent.tree.id)
         elif cd[0] == '.':
             blob = repo.create_blob('{}\n'.format(idx).encode('utf-8'))
             tb = repo.TreeBuilder(parent.tree)
@@ -111,12 +111,12 @@ class TestTransformations:
     def test_octopus_caught(self, empty_dendrifier):
         repo = empty_dendrifier.repo
         base = dendrify.create_base(repo, 'test-base')
-        base_tree_oid = repo[base.target].tree.oid
+        base_tree_oid = repo[base.target].tree.id
 
         sig = dendrify.create_signature(repo)
         def empty_commit(msg):
             return repo.create_commit(None, sig, sig,
-                                      msg, base_tree_oid, [base.target.hex])
+                                      msg, base_tree_oid, [str(base.target)])
         commits = [empty_commit(str(i)) for i in range(3)]
         octopus = repo.create_commit(None, sig, sig, 'octopus', base_tree_oid, commits)
         repo.create_branch('octopus', repo[octopus])
@@ -271,7 +271,7 @@ class TestTransformations:
         tip = repo.revparse_single('dendrified-0')
         sig = dendrify.create_signature(repo)
         merge_oid = repo.create_commit(None, sig, sig, 'swapped merge test',
-                                       tip.tree_id, [tip.oid, feature_start_parent.oid])
+                                       tip.tree_id, [tip.id, feature_start_parent.id])
         repo.create_branch('dendrified', repo[merge_oid])
         with pytest.raises(ValueError, match='expected .* to be pure merge'):
             empty_dendrifier.linearize('linear', 'dev', 'dendrified')

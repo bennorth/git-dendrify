@@ -47,9 +47,5 @@ Trivial content
     tests/test-sdist.sh
     COPYING
     .gitignore
-    .travis.yml
-    requirements.txt
-    MANIFEST.in
-    setup.py
 
 is hereby placed into the public domain.

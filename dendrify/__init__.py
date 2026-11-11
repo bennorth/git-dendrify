@@ -92,7 +92,7 @@ class Dendrifier:
         """
         oids = []
         oid = self.repo.lookup_branch(branch_name).target
-        base_oid = self.repo.revparse_single(base_revision).oid
+        base_oid = self.repo.revparse_single(base_revision).id
         while True:
             if oid == base_oid:
                 break
@@ -121,7 +121,7 @@ class Dendrifier:
         self._verify_branch_existence('source', linear_branch_name, True)
 
         section_start_ids = []
-        tip = self.repo.revparse_single(base_revision).oid
+        tip = self.repo.revparse_single(base_revision).id
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
@@ -160,7 +160,7 @@ class Dendrifier:
         elts = []
         section_start_oids = []
         oid = self.repo.lookup_branch(branch_name).target
-        base_oid = self.repo.revparse_single(base_revision).oid
+        base_oid = self.repo.revparse_single(base_revision).id
         while True:
             if oid == base_oid: break
             commit = self.repo[oid]
@@ -195,7 +195,7 @@ class Dendrifier:
         self._verify_branch_existence('destination', linear_branch_name, False)
         self._verify_branch_existence('source', dendrified_branch_name, True)
 
-        tip = self.repo.revparse_single(base_revision).oid
+        tip = self.repo.revparse_single(base_revision).id
         for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
             def commit_to_dest(msg, parent_ids):
