@@ -18,9 +18,11 @@ import pytest
 import pygit2 as git
 import time
 import os
-from io import StringIO
+from io import StringIO, BytesIO, TextIOWrapper
 import sys
+import re
 from contextlib import contextmanager
+import click
 from click.testing import CliRunner
 
 import dendrify
@@ -37,12 +39,12 @@ def temporary_cwd_within_repo(repo):
         os.chdir(saved_cwd)
 
 
-def run_cli(args, repo=None):
+def run_cli(args, repo=None, **kwargs):
     runner = CliRunner()
     if repo is None:
-        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False, **kwargs)
     with temporary_cwd_within_repo(repo):
-        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False)
+        return runner.invoke(dendrify.cli.main, args, catch_exceptions=False, **kwargs)
 
 
 @pytest.fixture
@@ -323,10 +325,48 @@ class TestCommandLine:
             # Don't really like this, but:
             saved_stdout = sys.stdout
             sys.stdout = captured_io = StringIO()
-            dendrify.ReportToStdout()('hello world')
-            assert captured_io.getvalue() == 'hello world\n'
+            oid = git.Oid(hex='0123456789abcdef0123456789abcdef01234567')
+            commit = dendrify.ReportedCommit(oid, 'Do thing\n\nDetails',
+                                             dendrify.CommitType.Normal, 2)
+            dendrify.ReportToStdout()(commit)
+            assert captured_io.getvalue() == '0123456789ab │ │ Do thing\n'
         finally:
             sys.stdout = saved_stdout
+
+    @pytest.mark.parametrize(
+        'encoding, exp_ascii',
+        [('utf-8', False), ('cp437', False),
+         ('ascii', True), ('latin-1', True), ('cp1252', True),
+         ('no-such-encoding', True)])
+    def test_drawing_for_encoding(self, encoding, exp_ascii):
+        class Stream:
+            pass
+        stream = Stream()
+        stream.encoding = encoding
+        exp_drawing = (dendrify.ReportToStdout.ASCII if exp_ascii
+                       else dendrify.ReportToStdout.BOX_DRAWING)
+        assert dendrify.ReportToStdout.drawing_for(stream) == exp_drawing
+
+    def test_reporting_ascii_fallback(self):
+        oid = git.Oid(hex='0123456789abcdef0123456789abcdef01234567')
+        CT = dendrify.CommitType
+        commits = [dendrify.ReportedCommit(oid, msg, kind, 1)
+                   for msg, kind in [('Start', CT.SectionStart),
+                                     ('Work', CT.Normal),
+                                     ('Finish', CT.SectionEnd)]]
+        saved_stdout = sys.stdout
+        try:
+            sys.stdout = TextIOWrapper(BytesIO(), encoding='latin-1')
+            report = dendrify.ReportToStdout()
+            for commit in commits:
+                report(commit)
+            sys.stdout.flush()
+            output = sys.stdout.buffer.getvalue().decode('latin-1')
+        finally:
+            sys.stdout = saved_stdout
+        assert output.splitlines() == ['0123456789ab / Start',
+                                       '0123456789ab | Work',
+                                       '0123456789ab \\ Finish']
 
     def test_no_repo_found(self, tmpdir):
         subdir = os.path.join(tmpdir.strpath, 'not-a-git-repo')
@@ -378,3 +418,94 @@ class TestCommandLine:
         result = run_cli(args, repo)
         assert result.exit_code == 1
         assert result.output == 'Error: {}\n'.format(exp_msg)
+
+    def test_progress_report(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '.', '[', '.', '[', '.', ']', ']', '.'])
+
+        def report_lines(args):
+            result = run_cli(args, repo)
+            assert result.exit_code == 0
+            return re.sub('^[0-9a-f]{12} ', 'SHA1 ', result.output,
+                          flags=re.MULTILINE).splitlines()
+
+        assert report_lines(['dendrify', 'dendrified', 'develop', 'linear']) == [
+            'SHA1   Work item 2',
+            'SHA1 ┌ Start work 3',
+            'SHA1 │ Work item 4',
+            'SHA1 │ ┌ Start work 5',
+            'SHA1 │ │ Work item 6',
+            'SHA1 │ └ Finish work 7',
+            'SHA1 └ Finish work 8',
+            'SHA1   Work item 9',
+        ]
+
+        assert report_lines(['linearize', 'linear-1', 'develop', 'dendrified']) == [
+            'SHA1   Work item 2',
+            'SHA1 ┌ <s>Start work 3',
+            'SHA1 │ Work item 4',
+            'SHA1 │ ┌ <s>Start work 5',
+            'SHA1 │ │ Work item 6',
+            'SHA1 │ └ </s>Finish work 7',
+            'SHA1 └ </s>Finish work 8',
+            'SHA1   Work item 9',
+        ]
+
+    def test_progress_report_colour(self, empty_dendrifier):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.', '.develop', '[', '.', '[', '.', ']', ']'])
+
+        GREEN_SHA1 = re.escape('\x1b[32m') + '[0-9a-f]{12}' + re.escape('\x1b[0m')
+
+        def bold_bright_blue(text):
+            return re.escape('\x1b[94m\x1b[1m' + text + '\x1b[0m')
+
+        def assert_report_matches(args, exp_patterns):
+            result = run_cli(args, repo, color=True)
+            assert result.exit_code == 0
+            lines = result.output.splitlines()
+            assert len(lines) == len(exp_patterns)
+            for line, exp_pattern in zip(lines, exp_patterns):
+                assert re.fullmatch(GREEN_SHA1 + exp_pattern, line), line
+
+        assert_report_matches(['dendrify', 'dendrified', 'develop', 'linear'], [
+            re.escape(' ┌ Start work 2'),
+            re.escape(' │ Work item 3'),
+            re.escape(' │ ┌ Start work 4'),
+            re.escape(' │ │ Work item 5'),
+            re.escape(' │ └ ') + bold_bright_blue('Finish work 6'),
+            re.escape(' └ ') + bold_bright_blue('Finish work 7'),
+        ])
+
+        assert_report_matches(['linearize', 'linear-1', 'develop', 'dendrified'], [
+            re.escape(' ┌ <s>Start work 2'),
+            re.escape(' │ Work item 3'),
+            re.escape(' │ ┌ <s>Start work 4'),
+            re.escape(' │ │ Work item 5'),
+            re.escape(' │ └ ') + bold_bright_blue('</s>Finish work 6'),
+            re.escape(' └ ') + bold_bright_blue('</s>Finish work 7'),
+        ])
+
+    @pytest.mark.parametrize(
+        'color_args, output_is_tty, exp_colour',
+        [([], False, False),
+         ([], True, True),
+         (['--color=auto'], False, False),
+         (['--color=auto'], True, True),
+         (['--color=always'], False, True),
+         (['--color', 'always'], False, True),
+         (['--color=never'], True, False)])
+    def test_color_option(self, empty_dendrifier, color_args, output_is_tty, exp_colour):
+        repo = empty_dendrifier.repo
+        populate_repo(repo, ['.develop', '.'])
+        result = run_cli(['dendrify'] + color_args + ['dendrified', 'develop', 'linear'],
+                         repo, color=output_is_tty)
+        assert result.exit_code == 0
+        assert ('\x1b[' in result.output) == exp_colour
+        assert click.unstyle(result.output).endswith('   Work item 1\n')
+
+    def test_bad_color_option(self, empty_dendrifier):
+        result = run_cli(['dendrify', '--color=sometimes', 'a', 'b', 'c'],
+                         empty_dendrifier.repo)
+        assert result.exit_code == 2
+        assert "'sometimes' is not one of 'auto', 'always', 'never'" in result.output

@@ -24,16 +24,22 @@ import dendrify
 from dendrify._version import __version__
 
 
-def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=False):
+def dendrifier_for_path(dirname, _ceiling_dir_for_testing='', report_to_stdout=False,
+                        color=None):
     repo = git.discover_repository(dirname, False, _ceiling_dir_for_testing)
     if repo is None:
         raise ValueError('could not find git repo starting from {}'.format(dirname))
-    kwargs = {'report': dendrify.ReportToStdout()} if report_to_stdout else {}
+    kwargs = ({'report': dendrify.ReportToStdout(color=color)}
+              if report_to_stdout else {})
     return dendrify.Dendrifier(repo, **kwargs)
 
 
-def _dendrifier_for_cwd(quiet):
-    return dendrifier_for_path(os.getcwd(), report_to_stdout=(not quiet))
+_color_f_when = {'auto': None, 'always': True, 'never': False}
+
+
+def _dendrifier_for_cwd(quiet, color):
+    return dendrifier_for_path(os.getcwd(), report_to_stdout=(not quiet),
+                               color=_color_f_when[color])
 
 
 @contextmanager
@@ -55,6 +61,11 @@ def _errors_reported_cleanly():
 _quiet_option = click.option('-q', '--quiet', is_flag=True,
                              help='Do not print commits as they are made.')
 
+_color_option = click.option('--color', type=click.Choice(list(_color_f_when)),
+                             default='auto', show_default=True,
+                             help='When to colour the printed commits:'
+                                  ' "auto" means only if output is a terminal.')
+
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(__version__, prog_name='git-dendrify',
@@ -65,10 +76,11 @@ def main():
 
 @main.command('dendrify')
 @_quiet_option
+@_color_option
 @click.argument('new_branch', metavar='NEW-BRANCH')
 @click.argument('base_commit', metavar='BASE-COMMIT')
 @click.argument('linear_branch', metavar='LINEAR-BRANCH')
-def dendrify_command(quiet, new_branch, base_commit, linear_branch):
+def dendrify_command(quiet, color, new_branch, base_commit, linear_branch):
     """Convert a linear history into a structured one.
 
     Create NEW-BRANCH, which must not already exist, holding a structured
@@ -76,15 +88,16 @@ def dendrify_command(quiet, new_branch, base_commit, linear_branch):
     existing branch LINEAR-BRANCH.
     """
     with _errors_reported_cleanly():
-        _dendrifier_for_cwd(quiet).dendrify(new_branch, base_commit, linear_branch)
+        _dendrifier_for_cwd(quiet, color).dendrify(new_branch, base_commit, linear_branch)
 
 
 @main.command('linearize')
 @_quiet_option
+@_color_option
 @click.argument('new_branch', metavar='NEW-BRANCH')
 @click.argument('base_commit', metavar='BASE-COMMIT')
 @click.argument('dendrified_branch', metavar='DENDRIFIED-BRANCH')
-def linearize_command(quiet, new_branch, base_commit, dendrified_branch):
+def linearize_command(quiet, color, new_branch, base_commit, dendrified_branch):
     """Convert a structured history into a linear one.
 
     Create NEW-BRANCH, which must not already exist, holding a linear
@@ -92,4 +105,5 @@ def linearize_command(quiet, new_branch, base_commit, dendrified_branch):
     existing branch DENDRIFIED-BRANCH.
     """
     with _errors_reported_cleanly():
-        _dendrifier_for_cwd(quiet).linearize(new_branch, base_commit, dendrified_branch)
+        _dendrifier_for_cwd(quiet, color).linearize(new_branch, base_commit,
+                                                    dendrified_branch)
