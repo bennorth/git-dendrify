@@ -333,6 +333,12 @@ class TestCommandLine:
         finally:
             sys.stdout = saved_stdout
 
+    def test_reporting_without_sha1(self):
+        commit = dendrify.ReportedCommit(None, 'Do thing\n\nDetails',
+                                         dendrify.CommitType.SectionEnd, 1)
+        formatted = dendrify.ReportToStdout().format(commit)
+        assert click.unstyle(formatted) == '└ Do thing'
+
     @pytest.mark.parametrize(
         'encoding, exp_ascii',
         [('utf-8', False), ('cp437', False),

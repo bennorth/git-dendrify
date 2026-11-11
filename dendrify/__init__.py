@@ -17,6 +17,7 @@
 import time
 import sys
 from dataclasses import dataclass
+from typing import Optional
 import click
 import pygit2 as git
 from enum import Enum
@@ -65,8 +66,9 @@ def create_base(repo, branch_name):
 class ReportedCommit:
     """
     A commit just created on the destination branch, as passed to a reporter.
+    In a dry run, no commit is created, and ``oid`` is ``None``.
     """
-    oid: git.Oid
+    oid: Optional[git.Oid]
     message: str
     kind: CommitType
     # Depth of the section which the commit opens, closes, or is within;
@@ -79,7 +81,7 @@ class ReportedCommit:
 
     @property
     def short_sha1(self):
-        return str(self.oid)[:12]
+        return None if self.oid is None else str(self.oid)[:12]
 
     @property
     def subject(self):
@@ -107,6 +109,8 @@ class ReportToStdout:
 
     If stdout's encoding cannot represent the box-drawing characters,
     the structure is drawn with "/", "|" and "\\" instead.
+
+    For a commit with no SHA1 (in a dry run), the SHA1 column is omitted.
     """
     BOX_DRAWING = {'start': '┌ ', 'within': '│ ', 'end': '└ '}
     ASCII = {'start': '/ ', 'within': '| ', 'end': '\\ '}
@@ -141,13 +145,15 @@ class ReportToStdout:
         return drawing['within'] * (depth - 1) + marker
 
     def format(self, commit):
-        sha1 = click.style(commit.short_sha1, fg='green')
+        short_sha1 = commit.short_sha1
+        sha1 = ('' if short_sha1 is None
+                else click.style(short_sha1, fg='green') + ' ')
         subject = (click.style(commit.subject, fg='bright_blue', bold=True)
                    if commit.closes_section
                    else commit.subject)
-        return '{sha1} {structure}{subject}'.format(sha1=sha1,
-                                                    structure=self.structure(commit),
-                                                    subject=subject)
+        return '{sha1}{structure}{subject}'.format(sha1=sha1,
+                                                   structure=self.structure(commit),
+                                                   subject=subject)
 
 
 class DoNotReport:
