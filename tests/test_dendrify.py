@@ -326,7 +326,8 @@ class TestCommandLine:
             saved_stdout = sys.stdout
             sys.stdout = captured_io = StringIO()
             oid = git.Oid(hex='0123456789abcdef0123456789abcdef01234567')
-            commit = dendrify.ReportedCommit(oid, 'Do thing\n\nDetails', 2, False)
+            commit = dendrify.ReportedCommit(oid, 'Do thing\n\nDetails',
+                                             dendrify.CommitType.Normal, 2)
             dendrify.ReportToStdout()(commit)
             assert captured_io.getvalue() == '0123456789ab     * Do thing\n'
         finally:

@@ -67,8 +67,12 @@ class ReportedCommit:
     """
     oid: git.Oid
     message: str
+    kind: CommitType
     depth: int  # Nesting depth, for indentation
-    closes_section: bool
+
+    @property
+    def closes_section(self):
+        return self.kind == CommitType.SectionEnd
 
     @property
     def short_sha1(self):
@@ -164,16 +168,15 @@ class Dendrifier:
         tip = self.repo.revparse_single(base_revision).id
         for id in self.linear_ancestry(base_revision, linear_branch_name):
             commit = self.repo[id]
-            def commit_to_dest(msg, parent_ids, closes_section=False):
+            def commit_to_dest(msg, parent_ids, kind):
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
-                self.report(ReportedCommit(new_oid, msg, len(section_start_ids),
-                                           closes_section))
+                self.report(ReportedCommit(new_oid, msg, kind, len(section_start_ids)))
                 return new_oid
             if commit.message.startswith('<s>'):
                 section_start_ids.append(tip)
-                tip = commit_to_dest(commit.message[3:], [tip])
+                tip = commit_to_dest(commit.message[3:], [tip], CommitType.SectionStart)
             elif commit.message.startswith('</s>'):
                 if not section_start_ids:
                     raise ValueError('unexpected section-end at {}'
@@ -181,9 +184,9 @@ class Dendrifier:
                                      .format(id))
                 start_id = section_start_ids.pop(-1)
                 msg = commit.message[4:]
-                tip = commit_to_dest(msg, [start_id, tip], closes_section=True)
+                tip = commit_to_dest(msg, [start_id, tip], CommitType.SectionEnd)
             else:
-                tip = commit_to_dest(commit.message, [tip])
+                tip = commit_to_dest(commit.message, [tip], CommitType.Normal)
 
         self.repo.create_branch(dendrified_branch_name, self.repo[tip])
 
@@ -235,18 +238,17 @@ class Dendrifier:
         tip = self.repo.revparse_single(base_revision).id
         for tp, id in self.flattened_ancestry(base_revision, dendrified_branch_name):
             commit = self.repo[id]
-            def commit_to_dest(msg, parent_ids, closes_section=False):
+            def commit_to_dest(msg, parent_ids):
                 new_oid = self.repo.create_commit(None,
                                                   commit.author, commit.committer,
                                                   msg, commit.tree_id, parent_ids)
                 # The linear form is reported without indentation.
-                self.report(ReportedCommit(new_oid, msg, 0, closes_section))
+                self.report(ReportedCommit(new_oid, msg, tp, 0))
                 return new_oid
             if tp == CommitType.SectionStart:
                 tip = commit_to_dest('<s>{}'.format(commit.message), [tip])
             elif tp == CommitType.SectionEnd:
-                tip = commit_to_dest('</s>{}'.format(commit.message), [tip],
-                                     closes_section=True)
+                tip = commit_to_dest('</s>{}'.format(commit.message), [tip])
             elif tp == CommitType.Normal:
                 tip = commit_to_dest(commit.message, [tip])
 
